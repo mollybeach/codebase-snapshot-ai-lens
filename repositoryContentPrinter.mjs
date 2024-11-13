@@ -1,6 +1,6 @@
 import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
-import { join, basename, dirname } from 'path';
-
+import { join } from 'path';
+import { projectRootPath } from './config.mjs';
 const contentFilePath = './content.txt'
 
 const ignorePatterns = [
@@ -173,7 +173,7 @@ function printDirectoryContent(directoryPath, contentFilePath, level = 0) {
 // Clear the content.txt file before starting
 writeFileSync(contentFilePath, '');
 
-const projectRoot = '../yourRepository'
+const projectRoot = projectRootPath;
 // Start processing and handle completion
 console.log('\n🚀 Starting file processing...\n');
 
