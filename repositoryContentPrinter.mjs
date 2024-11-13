@@ -2,39 +2,7 @@ import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { projectRootPath } from './config.mjs';
 const contentFilePath = './content.txt'
-
-const ignorePatterns = [
-    // Dependencies
-    'node_modules', 'bower_components', 'jspm_packages', 'package-lock.json', 'yarn.lock',
-    // Build outputs
-    'dist', 'build', 'out', '.min.js', '.min.css',
-    // Environment and secrets
-    '.env', '.pem', '.secret',
-    // IDE and Editor files
-    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath', 
-    '.sublime-workspace', '.sublime-project',
-    // Logs
-    'logs', '.log', 'npm-debug.log', 'yarn-debug.log', 'yarn-error.log',
-    // Testing and Coverage
-    'coverage', '.nyc_output', '.jest', '__tests__',
-    // Temp files
-    'tmp', 'temp', '.temp', '.tmp',
-    // Compiled files
-    '.com', '.class', '.dll', '.exe', '.o', '.so',
-    // Package files
-    '.7z', '.dmg', '.gz', '.iso', '.jar', '.rar', '.tar', '.zip',
-    // Database
-    '.sqlite', '.db',
-    // Mobile
-    '.gradle', 'local.properties', '.apk', '.aab', '.ipa',
-    // Python
-    '__pycache__', '.py[cod]', '.Python', 'env', 'venv', 'pip-log.txt',
-    // Ruby
-    '.gem', '.bundle', 'vendor',
-    // OS specific
-    '.DS_Store', '.AppleDouble', '.LSOverride', 'Icon', '._',
-    'Thumbs.db', 'ehthumbs.db', 'Desktop.ini'
-];
+import { ignorePatterns } from './ignorePatterns.mjs';
 
 function shouldIgnore(path) {
     const normalizedPath = path.toLowerCase();
