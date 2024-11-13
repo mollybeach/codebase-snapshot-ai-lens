@@ -23,10 +23,10 @@ cd repositoryContentPrinter
 
 ## Usage
 
-1. Modify the `projectRoot` variable in `repositoryContentPrinter.mjs` to point to your target directory:
+1. Modify the `projectRootPath` variable in `config.mjs` to point to your target directory:
 
 ```
-const projectRoot = '../dandelionCoiffure/docs';
+const projectRoot = '../yourRepositoryName';
 ```
 
 2. Run the script:
