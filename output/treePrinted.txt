@@ -1,18 +1,39 @@
 ## Project Structure
 
 ```
-./
-├── .git/
-├── output/
-│   ├── contentPrinted.txt
-│   ├── projectSnapshotPrinted.txt
-│   └── treePrinted.txt
-├── repo-scanners/
-│   ├── contentPrinter.mjs
-│   ├── projectSnapshotPrinter.mjs
-│   └── treePrinter.mjs
-├── .DS_Store
-├── config.mjs
-└── README.md
+client/
+├── components/
+│   └── SignIn.tsx
+├── node_modules/
+├── pages/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── [...nextauth].tsx
+│   │   ├── grant-role.tsx
+│   │   ├── message.tsx
+│   │   ├── tokens.tsx
+│   │   ├── update-roles.tsx
+│   │   └── users.tsx
+│   ├── _app.tsx
+│   └── index.tsx
+├── public/
+│   ├── favicon.ico
+│   └── thirdweb.svg
+├── styles/
+│   ├── globals.css
+│   └── Home.module.css
+├── .babelrc
+├── .env
+├── .env.example
+├── .eslintrc.json
+├── .gitignore
+├── env.production
+├── LICENSE.md
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── README.md
+└── tsconfig.json
 
 ```

@@ -1,1558 +1,1964 @@
 
 
-=== File: README.md ===
-# Repository Content Tools
+=== File: ../token-gating-discord-bot-api/client/.babelrc ===
+{
+    "presets": ["next/babel"],
+    "plugins": []
+  }
 
-A collection of Node.js utilities for generating comprehensive project documentation and snapshots. This toolkit includes three main components: Content Printer, Tree Printer, and Project Snapshot Generator.
 
-## Description
-This project provides a suite of tools for developers to generate detailed documentation and snapshots of their repositories. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits.
+=== File: ../token-gating-discord-bot-api/client/.eslintrc.json ===
+{
+  "extends": [
+    "next"
+  ]
+}
 
-## Features
 
-### Content Printer (contentPrinter.mjs)
-- 📄 Creates a consolidated file containing all project content
-- Enforces a 2000-line limit on output
-- 🚫 Skips binary files and common development artifacts
-- ✨ Provides real-time processing feedback
 
-### Tree Printer (treePrinter.mjs)
-- 🌳 Generates visual directory structure trees
-- 📁 Shows hierarchical file organization
-- 🔍 Supports custom ignore patterns
-- 🎯 Creates clean, formatted output
+=== File: ../token-gating-discord-bot-api/client/README.md ===
+## Getting Started
 
-### Project Snapshot Generator (projectSnapshotPrinter.mjs)
-- 📸 Creates comprehensive project snapshots
-- 📝 Extracts project documentation from README
-- 🛠️ Lists project dependencies and technologies
-- 🔄 Combines tree structure and content into one view
+Create a project using this example:
 
-## Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/mollybeach/repository-content-tools.git
-cd repository-content-tools
+npx thirdweb create --template next-typescript-starter
 ```
 
-## Usage
+You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
 
-### Content Printer
+On `pages/_app.tsx`, you'll find our `ThirdwebProvider` wrapping your app, this is necessary for our [hooks](https://portal.thirdweb.com/react) and
+[UI Components](https://portal.thirdweb.com/ui-components) to work.
+
+### Deploy to IPFS
+
+Deploy a copy of your application to IPFS using the following command:
+
 ```bash
-node repo-scanners/contentPrinter.mjs
+yarn deploy
 ```
 
-### Tree Printer
-```bash
-node repo-scanners/treePrinter.mjs
-```
+## Learn More
 
-### Project Snapshot
-```bash
-node repo-scanners/projectSnapshotPrinter.mjs
-```
+To learn more about thirdweb and Next.js, take a look at the following resources:
 
-## Configuration
+- [thirdweb React Documentation](https://docs.thirdweb.com/react) - learn about our React SDK.
+- [thirdweb TypeScript Documentation](https://docs.thirdweb.com/typescript) - learn about our JavaScript/TypeScript SDK.
+- [thirdweb Portal](https://docs.thirdweb.com) - check our guides and development resources.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 
-Modify `config.mjs` to customize:
-- Project root path
-- Output file locations
-- Ignore patterns
-- Line limits
+You can check out [the thirdweb GitHub organization](https://github.com/thirdweb-dev) - your feedback and contributions are welcome!
 
-## Output Files
+## Join our Discord!
 
-The tools generate three main output files in the `output` directory:
-- `contentPrinted.txt`: Full content of all processed files
-- `treePrinted.txt`: Visual directory structure
-- `projectSnapshotPrinted.txt`: Combined project snapshot
-
-## Contributing
-
-Feel free to submit issues and enhancement requests!
-
-## License
-
-MIT
-
-## Author
-
-@mollybeach
-
-## Project Structure
-
-```
-./
-├── .git/
-├── output/
-│   ├── contentPrinted.txt
-│   ├── projectSnapshotPrinted.txt
-│   └── treePrinted.txt
-├── repo-scanners/
-│   ├── contentPrinter.mjs
-│   ├── projectSnapshotPrinter.mjs
-│   └── treePrinter.mjs
-├── .DS_Store
-├── config.mjs
-└── README.md
-
-```
+For any questions, suggestions, join our discord at [https://discord.gg/thirdweb](https://discord.gg/thirdweb).
 
 
-=== File: config.mjs ===
-import { join } from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 
-// Edit this path to the root of the project you want to scan
-export const projectRootPath = './'//'../token-gating-discord-bot-api/client';
+=== File: ../token-gating-discord-bot-api/client/next.config.js ===
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  basePath: '/token-gating-discord-bot-api',
+  assetPrefix: '/token-gating-discord-bot-api/',
+  images: {
+    unoptimized: true,
+  },
+}
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+module.exports = nextConfig
 
-export const outputPaths = {
-    content: join(__dirname, 'output', 'contentPrinted.txt'),
-    tree: join(__dirname, 'output', 'treePrinted.txt'),
-    combined: join(__dirname, 'output', 'projectSnapshotPrinted.txt')
+
+=== File: ../token-gating-discord-bot-api/client/tsconfig.json ===
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+
+
+=== Directory: ../token-gating-discord-bot-api/client/components ===
+
+
+=== File: ../token-gating-discord-bot-api/client/components/SignIn.tsx ===
+import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import React from "react";
+import styles from "../styles/Home.module.css";
+
+export default function SignIn() {
+  const address = useAddress();
+  const { data: session } = useSession();
+
+  // 1. The user is signed into discord and connected to wallet.
+  if (session && address) {
+    return (
+      <div className={styles.bigSpacerTop}>
+        <a onClick={() => signOut()} className={styles.secondaryButton}>
+          Sign out of Discord
+        </a>
+      </div>
+    );
+  }
+
+  // 2. Connect Wallet
+  if (!address) {
+    return (
+      <div className={styles.main}>
+        <h2 className={styles.noGapBottom}>Connect Your Wallet</h2>
+        <p>Connect your wallet to check eligibility.</p>
+        <ConnectWallet accentColor="#F213A4" colorMode="dark" />
+      </div>
+    );
+  }
+
+  // 3. Connect with Discord (OAuth)
+  if (!session) {
+    return (
+      <div className={`${styles.main}`}>
+        <h2 className={styles.noGapBottom}>Sign In with Discord</h2>
+        <p>Sign In with Discord to check your eligibility for the NFT!</p>
+        <button
+          onClick={() => signIn("discord")}
+          className={`${styles.mainButton} ${styles.spacerTop}`}
+        >
+          Connect Discord
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+
+
+=== Directory: ../token-gating-discord-bot-api/client/pages ===
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/_app.tsx ===
+import type { AppProps } from "next/app";
+import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
+import { SessionProvider } from "next-auth/react";
+import "../styles/globals.css";
+
+// This is the chainId your dApp will work on.
+const activeChainId = ChainId.Mumbai;
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <ThirdwebProvider desiredChainId={activeChainId}>
+      <SessionProvider session={pageProps.session}>
+        <Component {...pageProps} />
+      </SessionProvider>
+    </ThirdwebProvider>
+  );
+}
+
+export default MyApp;
+
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/index.tsx ===
+import { useAddress, useSDK } from "@thirdweb-dev/react";
+import type { NextPage } from "next";
+import { useSession } from "next-auth/react";
+import SignIn from "../components/SignIn";
+import styles from "../styles/Home.module.css";
+
+const Home: NextPage = () => {
+  const address = useAddress(); // Get the user's address
+  const { data: session } = useSession(); // Get the user's session which contains the user's address
+  const sdk = useSDK(); // Get the Thirdweb SDK
+
+  async function requestGrantRole() {
+    // First, login and sign a message
+    const loginPayload = await sdk?.auth.login("http://localhost:3000"); // This will open a modal to login and sign a message
+    // Then make a request to our API endpoint.
+    try {
+      const response = await fetch("api/grant-role", {
+        method: "POST",
+        body: JSON.stringify({
+          loginPayload // This is the payload you got from the login step,
+        }),
+      });
+
+      const data = await response.json();
+      console.log('data');
+      console.log(data);
+      // have the alert read the console and format the message
+      (function() {
+        var exLog = console.log;
+        console.log = function(msg) {
+            // @ts-ignore
+            exLog.apply(this, arguments);
+            msg = JSON.stringify(msg, null, 4);
+            // remove the first and last characters
+            msg = msg.substring(18, msg.length - 3);
+            alert(msg);
+        }
+    })();
+    console.log(data);
+      //alert("Check the console for the response!"); 
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  return (
+    <div>
+      <div className={styles.container} style={{ marginTop: 0 }}>
+        <SignIn />
+        {address && session && (
+          <div className={styles.collectionContainer}>
+            <button className={styles.mainButton} onClick={requestGrantRole}>
+              Give me the role!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
-// Ignore Patterns
-export const ignorePatterns = [
-    // Dependencies
-    'node_modules', 'bower_components', 'jspm_packages', 'package-lock.json', 'yarn.lock',
-    // Build outputs
-    'dist', 'build', 'out', '.min.js', '.min.css',
-    // Environment and secrets
-    '.env', '.pem', '.secret',
-    // IDE and Editor files
-    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath', 
-    '.sublime-workspace', '.sublime-project',
-    // Logs
-    'logs', '.log', 'npm-debug.log', 'yarn-debug.log', 'yarn-error.log',
-    // Testing and Coverage
-    'coverage', '.nyc_output', '.jest', '__tests__',
-    // Temp files
-    'tmp', 'temp', '.temp', '.tmp',
-    // Compiled files
-    '.com', '.class', '.dll', '.exe', '.o', '.so',
-    // Package files
-    '.7z', '.dmg', '.gz', '.iso', '.jar', '.rar', '.tar', '.zip',
-    // Database
-    '.sqlite', '.db',
-    // Mobile
-    '.gradle', 'local.properties', '.apk', '.aab', '.ipa',
-    // Python
-    '__pycache, __pycache__', '.py[cod]', '.Python', 'env', 'venv', 'pip-log.txt',
-    // Ruby
-    '.gem', '.bundle', 'vendor',
-    // OS specific
-    '.DS_Store', '.AppleDouble', '.LSOverride', 'Icon', '._',
-    'Thumbs.db', 'ehthumbs.db', 'Desktop.ini',
-    // Git files
-    '.git',
-    '.gitignore',
-    '.gitattributes',
-    '.gitmodules',
-    '.github',
-    '.gitlab',
-    '.gitkeep',
-
-    // Package managers and dependencies
-    'node_modules',
-    'bower_components',
-    'jspm_packages',
-    'package-lock.json',
-    'yarn.lock',
-    'vendor',
-
-    // Build and output directories
-    'dist',
-    'build',
-    'out',
-    '.min.js',
-    '.min.css',
-
-    // Deployment directories
-    'deployment',
-    '.deploy',
-    '.kubernetes',
-    '.k8s',
-    'helm',
-    'terraform',
-    '.terraform',
-
-    // Environment and configuration
-    '.env',
-    '.pem',
-    '.secret',
-
-    // IDE and editor files
-    '.idea',
-    '.vscode',
-    '.swp',
-    '.swo',
-    '.DS_Store',
-    'Thumbs.db',
-
-    // Logs and coverage
-    'logs',
-    '.log',
-    'coverage',
-    '.nyc_output',
-
-    // Temporary files
-    'tmp',
-    'temp',
-    '.temp',
-    '.tmp',
-
-    // Python specific
-    'python3.9',
-    'site-packages',
-    'env',
-    '__pycache__',
-    'lib',
-    'include',
-    'bin',
-    'migrations',
-    'python3',
-
-    // Localization and static
-    'LC_MESSAGES',
-    'locale',
-    'static',
-
-    // Package files
-    'package.json', 
-    'package-lock.json',
-    'yarn.lock',
-    'pnpm-lock.yaml',
-    'pnpm-workspace.yaml',
-
-    // License
-    'LICENSE.txt',
-    'LICENSE',
-    'LICENSE.md',
-    'LICENSE.markdown',
-
-    // Readme
-    /*
-    'README.md',
-    'README.txt',
-    'README',*/
-
-    // Procfile
-    'Procfile',
-
-    // Latest dump
-    'latest.dump',
-    '.dump',
-
-    // Runtime
-    'runtime.txt',
-
-    // Txt
-    '.txt',
-    
-    'i18n/',
-];
+export default Home;
 
 
 
-=== Directory: repo-scanners ===
+=== Directory: ../token-gating-discord-bot-api/client/pages/api ===
 
 
-=== File: repo-scanners/contentPrinter.mjs ===
-import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
-import { join } from 'path';
-import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
+=== File: ../token-gating-discord-bot-api/client/pages/api/grant-role.tsx ===
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { unstable_getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
+import { ethers } from "ethers";
+//import discord from "discord.js";
+require("dotenv").config();
+import {createUser, getUser, emptyUser} from "./users";
+import { getAllTokens} from "./tokens";
+import { updateRoleForToken} from "./update-roles";
+import { assignMessage } from "./message";
 
-console.log(outputPaths.content);
+const abi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"indexed":false,"internalType":"uint256[]","name":"values","type":"uint256[]"}],"name":"TransferBatch","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"TransferSingle","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"value","type":"string"},{"indexed":true,"internalType":"uint256","name":"id","type":"uint256"}],"name":"URI","type":"event"},{"inputs":[],"name":"GRYFFINDOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"HUFFLEPUFF","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RAVENCLAW","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SLYTHERIN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"accounts","type":"address[]"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"burnBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"uint256[]","name":"_burnIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_burnAmounts","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintAmounts","type":"uint256[]"}],"name":"burnForMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"mintBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeBatchTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"string","name":"_uri","type":"string"}],"name":"setURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"uri","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
 
-export function shouldIgnore(path) {
-    const normalizedPath = path.toLowerCase();
-    
-    // Check if the path contains any of the ignore patterns
-    return ignorePatterns.some(pattern => {
-        // Check if pattern is in the path
-        if (normalizedPath.includes(pattern.toLowerCase())) {
-            return true;
-        }
-        
-        // Check for file extensions
-        if (pattern.startsWith('.') && normalizedPath.endsWith(pattern.toLowerCase())) {
-            return true;
-        }
-        
-        return false;
-    });
-}
-
-export function checkLineCount(filePath) {
-    try {
-        const content = readFileSync(filePath, 'utf8');
-        return content.split('\n').length;
-    } catch (error) {
-        console.error(`Error checking line count: ${error.message}`);
-        return 0;
+export default async function grantRole(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    // Get the login payload out of the request
+    const { loginPayload } = JSON.parse(req.body);
+    // Get the Next Auth session so we can use the user ID as part of the discord API request
+    const session = await unstable_getServerSession(req, res, authOptions);
+    if (!session) {
+        res.status(401).json({ error: "Not logged in" });
+        return;
     }
-}
-
-export function appendToFile(contentPrintedPath, newContent) {
-    try {
-        // Check current line count
-        const currentLines = checkLineCount(contentPrintedPath);
-        const newLines = newContent.split('\n').length;
-        
-        // If adding this content would exceed 2000 lines, return false
-        if (currentLines + newLines > 2000) {
-            console.log('\n📊 Reached 2000 lines limit!');
-            console.log(`✨ Processing complete with ${currentLines} lines`);
-            console.log('📝 Results saved to: content.txt\n');
-            return false;
-        }
-        
-        // Otherwise, append the content and return true
-        writeFileSync(contentPrintedPath, newContent, { flag: 'a' });
-        return true;
-    } catch (error) {
-        console.error(`Error appending to file: ${error.message}`);
-        return false;
-    }
-}
-
-export function printDirectoryContent(directoryPath, level = 0) {
-    try {
-        if (checkLineCount(outputPaths.content) >= 2000) {
-            console.log('\n📊 Already at 2000 lines limit!');
-            console.log('✨ Processing complete');
-            console.log(`📝 Results saved to: ${outputPaths.content}\n`);
-            return false;
-        }
-
-        // Check if the directory itself should be ignored
-        if (shouldIgnore(directoryPath)) {
-            console.log(`Skipping ignored directory: ${directoryPath}`);
-            return true;
-        }
-
-        const files = readdirSync(directoryPath);
-        
-        // Process files first
-        for (const file of files) {
-            const filePath = join(directoryPath, file);
-            
-            // Skip if file should be ignored
-            if (shouldIgnore(filePath)) {
-                console.log(`Skipping ignored file: ${filePath}`);
-                continue;
-            }
-
-            const stats = statSync(filePath);
-            
-            if (stats.isFile()) {
-                const header = `\n\n=== File: ${filePath} ===\n`;
-                if (!appendToFile(outputPaths.content, header)) {
-                    return false;
-                }
-                
-                try {
-                    const fileContent = readFileSync(filePath, 'utf8');
-                    if (!appendToFile(outputPaths.content, fileContent + '\n')) {
-                        return false;
-                    }
-                    console.log(`✅ Successfully added: ${filePath}`);
-                } catch (error) {
-                    const errorMsg = `Error reading file: ${error.message}\n`;
-                    if (!appendToFile(outputPaths.content, errorMsg)) {
-                        return false;
-                    }
-                    console.error(`❌ Error processing: ${filePath}`);
-                }
-            }
-        }
-
-        // Then process directories
-        for (const file of files) {
-            const filePath = join(directoryPath, file);
-            
-            // Skip if directory should be ignored
-            if (shouldIgnore(filePath)) {
-                console.log(`Skipping ignored directory: ${filePath}`);
-                continue;
-            }
-
-            const stats = statSync(filePath);
-            
-            if (stats.isDirectory()) {
-                const header = `\n\n=== Directory: ${filePath} ===\n`;
-                if (!appendToFile(outputPaths.content, header)) {
-                    return false;
-                }
-                
-                if (!printDirectoryContent(filePath, level + 1)) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    } catch (error) {
-        console.error(`Error processing directory ${directoryPath}: ${error.message}`);
-        return false;
-    }
-}
-
-// Clear the content.txt file before starting
-console.log(outputPaths.content);
-writeFileSync(outputPaths.content, '');
-
-const projectRoot = projectRootPath;
-// Start processing and handle completion
-console.log('\n🚀 Starting file processing...\n');
-
-const success = printDirectoryContent(projectRoot);
-
-if (success) {
-    const finalLineCount = checkLineCount(outputPaths.content);
-    console.log('\n✨ Processing complete!');
-    console.log(`📊 Total lines processed: ${finalLineCount}`);
-    console.log('📝 Results saved to: content.txt\n');
-} else {
-    const finalLineCount = checkLineCount(outputPaths.content);
-    if (finalLineCount >= 2000) {
-        // Don't need to print anything here as the message is already shown
-    } else {
-        console.log(`✨ Processing complete with ${finalLineCount} lines`);
-        console.log('📝 Results saved to: content.txt\n');
-    }
-}
-
-
-=== File: repo-scanners/projectSnapshotPrinter.mjs ===
-import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { outputPaths } from '../config.mjs';
-import { createFileStructureFile } from './treePrinter.mjs';
-import { printDirectoryContent } from './contentPrinter.mjs';
-import { projectRootPath } from '../config.mjs';
-
-// Helper function to determine snapshot type
-function getSnapshotType(path) {
-    const segments = path.split('/');
-    const currentDir = segments.filter(Boolean).pop();
-    
-    if (segments.filter(Boolean).length <= 1) {
-        return 'Full Project';
-    }
-    return `Partial Project (${currentDir} directory)`;
-}
-
-// Helper function to get context description
-function getContextDescription(path) {
-    const segments = path.split('/');
-    const currentDir = segments.filter(Boolean).pop();
-    
-    if (segments.filter(Boolean).length <= 1) {
-        return 'the complete project structure';
-    }
-    return `only the ${currentDir} directory and its contents`;
-}
-
-// Function to find and parse README.md from project root
-function findAndParseReadme(startPath) {
-    const readmePath = join(startPath, 'README.md');
-    console.log('\n🔍 Looking for README at:', readmePath);
-    
-    if (existsSync(readmePath)) {
-        try {
-            const content = readFileSync(readmePath, 'utf8');
-            console.log('📖 Successfully read README.md');
-            const lines = content.split('\n');
-            
-            let hashA = '';
-            let contentA = '';
-            let hashB = '';
-            let contentB = '';
-            let hashC = '';
-            let contentC = '';
-            let hashD = '';
-            
-            let currentContent = '';
-            let hashCount = 0;
-            let isCollectingContentC = false;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                
-                // Check for # or ## (but not ###)
-                if (line.match(/^#{1,2}\s/) && !line.match(/^#{3,}\s/)) {
-                    hashCount++;
-                    
-                    if (hashCount === 1) {
-                        hashA = line;
-                    } else if (hashCount === 2) {
-                        contentA = currentContent.trim();
-                        hashB = line;
-                    } else if (hashCount === 3) {
-                        contentB = currentContent.trim();
-                        hashC = line;
-                        isCollectingContentC = true;
-                    } else if (hashCount === 4) {
-                        hashD = line;
-                        contentC = currentContent.trim();
-                        break;
-                    }
-                    currentContent = '';
-                } else {
-                    currentContent += line + '\n';
-                }
-            }
-            
-            // Handle case where we don't hit a fourth heading
-            if (hashCount === 1) {
-                contentA = currentContent.trim();
-            } else if (hashCount === 2) {
-                contentB = currentContent.trim();
-            } else if (hashCount === 3) {
-                contentC = currentContent.trim();
-            }
-            
-            const result = {
-                hashA: hashA.replace(/^#+\s+/, '').trim(),
-                contentA: contentA,
-                hashB: hashB.replace(/^#+\s+/, '').trim(),
-                contentB: contentB,
-                hashC: hashC.replace(/^#+\s+/, '').trim(),
-                contentC: contentC
-            };
-            
-            console.log('\n📝 Parsed sections:', {
-                hashA: result.hashA,
-                hashB: result.hashB,
-                hashC: result.hashC,
-                hashD: hashD.replace(/^#+\s+/, '').trim()
-            });
-            
-            return result;
-            
-        } catch (error) {
-            console.error('❌ Error parsing README:', error);
-            return null;
-        }
-    }
-    console.log('❌ README.md not found');
-    return null;
-}
-
-// Function to find the nearest package.json
-function findNearestPackageJson(startPath) {
-    console.log('\n🔍 Starting package.json search from:', startPath);
-    let currentPath = startPath;
-    
-    while (currentPath !== '/') {
-        const packagePath = join(currentPath, 'package.json');
-        console.log('Checking for package.json at:', packagePath);
-        
-        if (existsSync(packagePath)) {
-            console.log('✅ Found package.json at:', packagePath);
-            try {
-                const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
-                console.log('📦 Successfully parsed package.json');
-                const technologies = {
-                    dependencies: packageJson.dependencies || {},
-                    devDependencies: packageJson.devDependencies || {},
-                    path: packagePath
-                };
-                return technologies;
-            } catch (error) {
-                console.error('❌ Error parsing package.json:', error);
-                console.error('At path:', packagePath);
-                return null;
-            }
-        }
-        
-        const previousPath = currentPath;
-        currentPath = dirname(currentPath);
-        console.log('⬆️  Moving up to parent directory:', currentPath);
-        
-        // Prevent infinite loop
-        if (currentPath === previousPath) {
-            console.log('🛑 Reached root directory, stopping search');
-            break;
-        }
-    }
-    
-    console.log('❌ No package.json found in project hierarchy');
-    return null;
-}
-
-// Function to format technologies
-function formatTechnologies(technologies) {
-    if (!technologies) return 'No package.json found in project hierarchy';
-    
-    const { dependencies, devDependencies, path } = technologies;
-    let output = '';
-    
-    output += '=================================\n';
-    output += '      PROJECT TECHNOLOGIES\n';
-    output += '=================================\n';
-    output += `Located package.json: ${path}\n\n`;
-
-    if (Object.keys(dependencies).length > 0) {
-        output += '📦 Main Dependencies\n';
-        output += '-------------------\n';
-        Object.entries(dependencies)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .forEach(([name, version]) => {
-                output += `• ${name.padEnd(20)} ${version}\n`;
-            });
-    }
-    
-    if (Object.keys(devDependencies).length > 0) {
-        output += '\n🛠️  Dev Dependencies\n';
-        output += '-------------------\n';
-        Object.entries(devDependencies)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .forEach(([name, version]) => {
-                output += `• ${name.padEnd(20)} ${version}\n`;
-            });
-    }
-    
-    return output + '\n';
-}
-
-async function generateprojectSnapshot() {
-    console.log('\n🚀 Starting combined tree and content generation...\n');
-
-    // Step 1: Generate tree structure
-    console.log('📁 Generating tree structure...');
-    createFileStructureFile(projectRootPath);
-
-    // Step 2: Generate content
-    console.log('\n📄 Generating content...');
-    const success = printDirectoryContent(projectRootPath);
-
-    // Step 3: Combine the files
-    console.log('\n🔄 Combining files...');
-    try {
-        const treeContent = readFileSync(outputPaths.tree, 'utf8');
-        console.log('Successfully read tree content');
-        const fileContent = readFileSync(outputPaths.content, 'utf8');
-        console.log('Successfully read file content');
-        const technologies = findNearestPackageJson(projectRootPath);
-        console.log('Successfully found nearest package.json');
-        const readmeInfo = findAndParseReadme(projectRootPath);
-        console.log('Successfully parsed README.md');
-        
-        const combinedContent = `# Project Snapshot of ${readmeInfo?.hashA || 'Unknown Project'}
-
-${readmeInfo?.contentA || ''}
-
-## ${readmeInfo?.hashB || 'Description'}
-${readmeInfo?.contentB || 'No description available'}
-
-## ${readmeInfo?.hashC || 'Features'}
-${readmeInfo?.contentC || 'No features listed'}
-
-This is an automated project snapshot generated for AI assistance.
-
-## Project Context
-- Full Path: ${projectRootPath}
-- Type: ${getSnapshotType(projectRootPath)}
-- Generated: ${new Date().toLocaleString()}
-
-## Important Notes
-- This snapshot shows ${getContextDescription(projectRootPath)}
-- Files over 2000 lines are truncated
-- Binary files and dependencies are excluded
-
-${formatTechnologies(technologies)}
-=================================
-           FILE TREE
-=================================
-Directory structure for: ${projectRootPath}
-
-${treeContent}
-
-=================================
-         FILE CONTENTS
-=================================
-File contents for: ${projectRootPath}
-Each file is preceded by its full path.
-
-${fileContent}
-
-=================================
-       ADDITIONAL NOTES
-=================================
-- Generated using repository-content-printer
-- Node modules and build outputs excluded
-- See config.mjs for complete ignore list
-`;
-
-        writeFileSync(outputPaths.combined, combinedContent);
-        
-        console.log('\n✨ Combined file generated successfully!');
-        console.log(`📝 Results saved to: ${outputPaths.combined}\n`);
-    } catch (error) {
-        console.error('❌ Error combining files:', error);
-    }
-}
-
-// Run the combined generation
-generateprojectSnapshot(); 
-
-
-=== File: repo-scanners/treePrinter.mjs ===
-import { readdirSync, statSync, writeFileSync } from 'fs';
-import { join, basename } from 'path';
-import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
-
-export function shouldSkipRecursion(path) {
-    const dirName = basename(path);
-    return ignorePatterns.some(pattern => 
-        dirName === pattern || 
-        path.includes(`/${pattern}/`)
+    const sdk = new ThirdwebSDK("mumbai");
+    const provider = new ethers.providers.JsonRpcProvider(
+        "https://matic-mumbai.chainstacklabs.com"
     );
+    const hogwartsContract = new ethers.Contract(
+        process.env.CONTRACT_ADDRESS as string,
+        abi,
+        provider
+    ); 
+    const verifiedWalletAddress = sdk.auth.verify(
+        "http://localhost:3000",
+        loginPayload
+    ); // Verify the login payload is real and valid
+    if (!verifiedWalletAddress) {// If the login payload is not valid, return an error
+        res.status(401).json({ error: "Invalid login payload" });
+        return;
+    }
+    // @ts-ignore
+    const { userId } = session; 
+    // temp data for testing:
+    // const user_id = process.env.DISCORD_USER_ID as string;
+    console.log("User ID: " + userId);
+
+    let user = await getUser(userId);
+     if (!user) {
+        console.log("user does not exist in db adding new user");
+        user = await createUser(userId, verifiedWalletAddress);
+     // if user exists in database: then update the user
+     } else { 
+        console.log("User Exists Updating User in Db");
+        // await updateUser(user_id, verifiedWalletAddress);
+        // remove the user data from the database each time for testing
+        await emptyUser(userId);
+    }
+    // get all the tokens from the database and put their ids in an array
+    const tokensInContract = await getAllTokens();
+    for (let i = 0; i < tokensInContract.length; i++) {
+        const balanceOfATokenInWallet = await hogwartsContract.balanceOf(verifiedWalletAddress,tokensInContract[i]._id);
+        console.log('Your Wallet Address : ' + verifiedWalletAddress + 'Token ID: ' + tokensInContract[i]._id + ' Balance: ' + balanceOfATokenInWallet.toNumber());
+        // check if the user roles need to be updated
+        updateRoleForToken(userId, tokensInContract[i]._id, verifiedWalletAddress, balanceOfATokenInWallet.toNumber());
+        if(i===tokensInContract.length-1){
+            console.log('Finished updating all tokens');
+            res.status(200).json({ message: assignMessage('', '', true, true) });
+        }
+    }
 }
 
-// Function to get the file structure recursively
-export function gettreeStructure(dir, level = 0) {
-    let structure = '';
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/message.tsx ===
+const messages: string[] = [];
+export function assignMessage (role_name: string, role_type: string, writeType: boolean, readType: boolean) {
+
+    function roleRemoveMessage (role_name: string)  {
+        return `You have been Removed from the ${role_name} Level role for Token Type ${role_type}!
+        You no longer are in possession of enough tokens to hold this role! !!`;
+    };
+    function roleAssignMessage (role_name: string) {
+        return `You have been Granted the ${role_name} Level role! Level role for Token Type ${role_type}!`;
+    };
     
-    // Get all files and directories within the directory
-    const items = readdirSync(dir);
-    
-    // Separate and sort directories and files
-    const directories = items
-        .filter(item => statSync(join(dir, item)).isDirectory())
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    
-    const files = items
-        .filter(item => statSync(join(dir, item)).isFile())
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    
-    // Process directories first
-    directories.forEach((item, index) => {
-        const fullPath = join(dir, item);
-        const isLast = index === directories.length - 1 && files.length === 0;
-        
-        // Add directory to structure
-        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}/\n`;
-        
-        if (!shouldSkipRecursion(fullPath)) {
-            structure += gettreeStructure(fullPath, level + 1);
+    if (writeType && !readType) {
+        messages.push(roleAssignMessage(role_name));
+    } else if (!readType && !writeType){
+        messages.push(roleRemoveMessage(role_name));
+    }
+
+    if (readType) {
+        return messages.join(" ");
+    }
+}
+
+
+
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/tokens.tsx ===
+
+export async function createToken(token_id: number, token_roles: [], type: string) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                _id: token_id,
+                token_roles: token_roles,
+                type: type
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
+}
+
+export async function getToken(token_id: number) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
         }
     });
-    
-    // Then process files
-    files.forEach((item, index) => {
-        const isLast = index === files.length - 1;
-        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}\n`;
+    const data = await response.json();
+    return data;
+
+}
+export async function updateToken(token_id: number, token_roles: [], type: string) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                token_roles: token_roles,
+                type: type,
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
+}
+export async function deleteToken(token_id: number) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+export async function getAllTokens() {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/update-roles.tsx ===
+import {getUser, updateUser} from "./users";
+import { getToken} from "./tokens";
+import { assignMessage } from "./message";
+
+export async function grantDiscordRole(user_id: string, role_id: string) {
+    const response = await fetch(
+        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
+        {
+          headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
+          },
+          method: "PUT",
+        }
+    );
+    const data = await response.json();
+    return data;
+}
+export async function removeDiscordRole(user_id: string, role_id: string) {
+    const response = await fetch(
+        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
+        {
+          headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
+          },
+          method: "DELETE",
+        }
+    );
+    const data = await response.json();
+    return data;
+}
+export async function hasDiscordRole(user_id: string, role_id: string) {
+    const response = await fetch(
+        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
+        {
+          headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
+          },
+          method: "GET",
+        }
+    );
+    const data = await response.json();
+    return data;
+}
+
+export async function updateRoleForToken(user_id: string, token_id: number, walletAddress: string, walletBalance: number) {
+  // get the token roles
+  const token = await getToken(token_id);
+  const token_type = token.type;
+  const token_roles = token.token_roles; // returns an array of objects
+  // get the user roles
+  const user = await getUser(user_id);
+  const user_roles = user.user_roles;
+  // function to determine if user already has role
+  function userHasRole (user_roles_arr:[], role_id: string) {
+    // @ts-ignore
+    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
+    return role_arr
+  }
+  // update the user roles
+  function roleUpdate(token_id: number, role_id: string, i: number) {
+    // determine if user already has role
+    const hasRoleArr = userHasRole(user_roles, role_id);
+    const hasRole = hasRoleArr.length > 0;
+    // calculate the curr next and previous role amounts
+    const currAmt = token_roles[i].required_amount;
+    const nxtAmt = token_roles[i++].required_amount;
+    const prvAmt = token_roles[i--].required_amount;
+    const thisRoleName = token_roles[i].role_name;
+    // determine if the user curr role matches the token role price
+    const atTop = walletBalance >= currAmt && token_roles.length - 2 === i;
+    const keepRole =
+      (walletBalance >= currAmt && walletBalance < nxtAmt) ||
+      (walletBalance >= currAmt && token_roles.length - 2 === i);
+    const moveDown =
+      walletBalance < currAmt && walletBalance >= prvAmt && i != 0;
+    const moveUp = walletBalance >= nxtAmt && token_roles.length - 2 != i;
+    const atBottom = i === 0;
+    const zeroBalance = walletBalance === 0;
+    // add post role to the user and discord
+    function addRole(message: string) {
+      const newToken = {
+        _id: token_id,
+        token_roles: [
+          {
+            _id: role_id,
+            token_id: token_id,
+            role_name: thisRoleName,
+            required_amount: currAmt,
+          },
+        ],
+        type: token_type,
+      };
+      const newRole = {
+        _id: role_id,
+        token_id: token_id,
+        role_name: thisRoleName,
+        required_amount: currAmt,
+      };
+      // if user has the role, createUser will update the user
+      user.public_address = walletAddress;
+      // add new token to the user
+      const tokensArr = user.tokens;
+      tokensArr.push(newToken);
+      // add new role to the user
+      const rolesArr = user.user_roles;
+      rolesArr.push(newRole);
+      // update the user
+      updateUser(user_id, user.public_address, tokensArr, rolesArr);
+      //grant the role discord role to the user
+      grantDiscordRole(user_id, role_id);
+      // message the user about the updates
+      assignMessage(token_roles[i].role_name, token_type, true, false);
+      console.log(message);
+    }
+    // remove the role from the user and discord
+    function removeRole(message: string, token_id?: number) {
+      user.public_address = walletAddress;
+      // remove the role from the user
+      const rolesArr = user.user_roles;
+      rolesArr.splice(rolesArr.indexOf(role_id), 1);
+      // remove the token from the user if balance is zero
+      const tokensArr = user.tokens;
+      // if token_id is passed in, remove the token from the user
+      if (token_id) {
+        console.log(
+          "Removing Token Data from User Because Balance is Zero " + token_id
+        );
+        tokensArr.splice(tokensArr.indexOf(token_id), 1);
+      }
+      updateUser(user_id, user.public_address, tokensArr, rolesArr);
+      // remove the discord role from the user
+      removeDiscordRole(user_id, role_id);
+      // message the user about the updates
+      console.log(message);
+      assignMessage(token_roles[i].role_name, token_type, false, false);
+    }
+    function keptRole(message: string) {
+      //update user balances
+      updateUser(user_id, user.public_address, user.tokens, user.user_roles);
+      // assign result message
+      assignMessage(token_roles[i].role_name, token_type, false, false);
+      // message the user about the updates
+      console.log(message);
+    }
+
+    if (atTop) {
+      hasRole === true ?keptRole("Congrats "+user_id+" Kept Role"+role_id+" Reached the Maxiumum Role Level for Token Thank You!!"):addRole("Congrats "+user_id+" You've qualified for a new role : "+role_id+" Upgrading Your Role Status....");
+    } else if (keepRole) {
+      hasRole === true ?keptRole("Dear "+user_id+" Kept Role "+role_id+"Buy more tokens to Increase Role Level!!!!"):addRole("Congrats "+user_id+" You've qualified for a new role :"+role_id+" Upgrading Your Role Status....");
+    } else if (moveUp) {
+      hasRole?removeRole("Congrats "+user_id+" Previous Role :"+role_id+" Was Removed. Upgrading Your Role Status...."):console.log("Congrats "+user_id+" You're over qualified for this role : "+role_id+" Upgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i++);
+    } else if (moveDown) {
+      hasRole?removeRole("Dear "+user_id+" Previous Role :"+role_id+"Was Removed. Downgrading Your Role Status...."+role_id):console.log("Dear "+user_id+"You're no longer qualified for this role :"+role_id+" Downgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i--);
+    } else if (atBottom) {
+      hasRole?removeRole("Unfortunately "+ +user_id+" Previous Role :"+role_id+" Was Removed You're no longer qualified for this role : "+role_id+" or any other role for this token please purchase more tokens to get a role for this token"):console.log("Unfortunately "+user_id+"You're not qualified for this role"+role_id+"or any other role for this token please purchase more tokens to get a role for this token");
+    } else if (zeroBalance) {
+      hasRole?removeRole("Dear "+user_id+" Zero Balance: No longer own tokens removing token from db",token_id):console.log("Dear "+user_id+" Zero Balance: You dont own any tokens for this token");
+    } else {
+      console.log("Something went wrong");
+    }
+  }
+  roleUpdate(token_id, token_roles[0]._id, 0);
+}
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/users.tsx ===
+
+export async function createUser(user_id: string, public_address?: string, tokens? : [], roles?: []) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                _id: user_id,
+                public_address: public_address,
+                tokens: tokens? tokens : [],
+                user_roles: roles? roles : []
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
+}
+export async function getUser(user_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
     });
-    
-    return structure;
+    const data = await response.json();
+    return data;
+}
+export async function updateUser(user_id: string, public_address?: string, tokens? : [], user_roles?: []) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                public_address: public_address? public_address : "",
+                tokens: tokens? tokens : [],
+                user_roles: user_roles? user_roles : []
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
 }
 
-// Function to create the treeStructure.txt
-export function createFileStructureFile(rootDir) {
-    // Initialize/clear the tree file
-    writeFileSync(outputPaths.tree, '');
-    
-    const structure = `## Project Structure
-
-\`\`\`
-${basename(rootDir)}/\n${gettreeStructure(rootDir)}
-\`\`\``;
-    
-    // Write to file using the configured path
-    writeFileSync(outputPaths.tree, structure, 'utf-8');
-    console.log(structure);
-    console.log(`Tree structure saved to: ${outputPaths.tree}`);
+export async function deleteUser(user_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+// get all users
+export async function getAllUsers() {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+// see if user has a particular role
+export async function userHasRole(user_id: string, role_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+    const data = await response.json();
+    const user_roles_arr = data.user_roles;
+    // @ts-ignore
+    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
+    return role_arr
+}
+// see if user has a particular token
+export async function userHasToken(user_id: string, token_id: number) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+    const data = await response.json();
+    const user_tokens_arr = data.tokens;
+    // @ts-ignore
+    const token_arr = user_tokens_arr.filter((item) => { return item._id === token_id});
+    return token_arr
+}
+// empty user tokens
+export async function emptyUser(user_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                tokens: [],
+                user_roles: []
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
 }
 
-// Optional: Move this to a separate file
-const projectRoot = projectRootPath;
-createFileStructureFile(projectRoot);
 
 
 
-
-=== File: README.md ===
-# Repository Content Tools
-
-A collection of Node.js utilities for generating comprehensive project documentation and snapshots. This toolkit includes three main components: Content Printer, Tree Printer, and Project Snapshot Generator.
-
-## Description
-This project provides a suite of tools for developers to generate detailed documentation and snapshots of their repositories. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits.
-
-## Features
-
-### Content Printer (contentPrinter.mjs)
-- 📄 Creates a consolidated file containing all project content
-- Enforces a 2000-line limit on output
-- 🚫 Skips binary files and common development artifacts
-- ✨ Provides real-time processing feedback
-
-### Tree Printer (treePrinter.mjs)
-- 🌳 Generates visual directory structure trees
-- 📁 Shows hierarchical file organization
-- 🔍 Supports custom ignore patterns
-- 🎯 Creates clean, formatted output
-
-### Project Snapshot Generator (projectSnapshotPrinter.mjs)
-- 📸 Creates comprehensive project snapshots
-- 📝 Extracts project documentation from README
-- 🛠️ Lists project dependencies and technologies
-- 🔄 Combines tree structure and content into one view
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/mollybeach/repository-content-tools.git
-cd repository-content-tools
-```
-
-## Usage
-
-### Content Printer
-```bash
-node repo-scanners/contentPrinter.mjs
-```
-
-### Tree Printer
-```bash
-node repo-scanners/treePrinter.mjs
-```
-
-### Project Snapshot
-```bash
-node repo-scanners/projectSnapshotPrinter.mjs
-```
-
-## Configuration
-
-Modify `config.mjs` to customize:
-- Project root path
-- Output file locations
-- Ignore patterns
-- Line limits
-
-## Output Files
-
-The tools generate three main output files in the `output` directory:
-- `contentPrinted.txt`: Full content of all processed files
-- `treePrinted.txt`: Visual directory structure
-- `projectSnapshotPrinted.txt`: Combined project snapshot
-
-## Contributing
-
-Feel free to submit issues and enhancement requests!
-
-## License
-
-MIT
-
-## Author
-
-@mollybeach
-
-## Project Structure
-
-```
-./
-├── .git/
-├── output/
-│   ├── contentPrinted.txt
-│   ├── projectSnapshotPrinted.txt
-│   └── treePrinted.txt
-├── repo-scanners/
-│   ├── contentPrinter.mjs
-│   ├── projectSnapshotPrinter.mjs
-│   └── treePrinter.mjs
-├── .DS_Store
-├── config.mjs
-└── README.md
-
-```
+=== Directory: ../token-gating-discord-bot-api/client/pages/api/auth ===
 
 
-=== File: config.mjs ===
-import { join } from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+=== File: ../token-gating-discord-bot-api/client/pages/api/auth/[...nextauth].tsx ===
+import NextAuth, { NextAuthOptions } from "next-auth";
+import DiscordProvider from "next-auth/providers/discord";
+require("dotenv").config();
 
-// Edit this path to the root of the project you want to scan
-export const projectRootPath = './'//'../token-gating-discord-bot-api/client';
+export const authOptions: NextAuthOptions = {
+  // Configure one or more authentication providers
+  providers: [
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID as string,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+    }),
+  ],
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-export const outputPaths = {
-    content: join(__dirname, 'output', 'contentPrinted.txt'),
-    tree: join(__dirname, 'output', 'treePrinted.txt'),
-    combined: join(__dirname, 'output', 'projectSnapshotPrinted.txt')
+  // When the user signs in, get their token
+  callbacks: {
+    async jwt({ token, account }) {
+      // Persist the user ID to the token right after signin
+      if (account) {
+        console.log(account);
+        token.userId = account.providerAccountId;
+      }
+      return token;
+    },
+    
+    async session({ session, token }) {
+      // @ts-ignore
+      session.userId = token.userId;
+      return session;
+    },
+  },
 };
 
-// Ignore Patterns
-export const ignorePatterns = [
-    // Dependencies
-    'node_modules', 'bower_components', 'jspm_packages', 'package-lock.json', 'yarn.lock',
-    // Build outputs
-    'dist', 'build', 'out', '.min.js', '.min.css',
-    // Environment and secrets
-    '.env', '.pem', '.secret',
-    // IDE and Editor files
-    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath', 
-    '.sublime-workspace', '.sublime-project',
-    // Logs
-    'logs', '.log', 'npm-debug.log', 'yarn-debug.log', 'yarn-error.log',
-    // Testing and Coverage
-    'coverage', '.nyc_output', '.jest', '__tests__',
-    // Temp files
-    'tmp', 'temp', '.temp', '.tmp',
-    // Compiled files
-    '.com', '.class', '.dll', '.exe', '.o', '.so',
-    // Package files
-    '.7z', '.dmg', '.gz', '.iso', '.jar', '.rar', '.tar', '.zip',
-    // Database
-    '.sqlite', '.db',
-    // Mobile
-    '.gradle', 'local.properties', '.apk', '.aab', '.ipa',
-    // Python
-    '__pycache, __pycache__', '.py[cod]', '.Python', 'env', 'venv', 'pip-log.txt',
-    // Ruby
-    '.gem', '.bundle', 'vendor',
-    // OS specific
-    '.DS_Store', '.AppleDouble', '.LSOverride', 'Icon', '._',
-    'Thumbs.db', 'ehthumbs.db', 'Desktop.ini',
-    // Git files
-    '.git',
-    '.gitignore',
-    '.gitattributes',
-    '.gitmodules',
-    '.github',
-    '.gitlab',
-    '.gitkeep',
+export default NextAuth(authOptions);
 
-    // Package managers and dependencies
-    'node_modules',
-    'bower_components',
-    'jspm_packages',
-    'package-lock.json',
-    'yarn.lock',
-    'vendor',
 
-    // Build and output directories
-    'dist',
-    'build',
-    'out',
-    '.min.js',
-    '.min.css',
+=== Directory: ../token-gating-discord-bot-api/client/public ===
 
-    // Deployment directories
-    'deployment',
-    '.deploy',
-    '.kubernetes',
-    '.k8s',
-    'helm',
-    'terraform',
-    '.terraform',
 
-    // Environment and configuration
-    '.env',
-    '.pem',
-    '.secret',
-
-    // IDE and editor files
-    '.idea',
-    '.vscode',
-    '.swp',
-    '.swo',
-    '.DS_Store',
-    'Thumbs.db',
-
-    // Logs and coverage
-    'logs',
-    '.log',
-    'coverage',
-    '.nyc_output',
-
-    // Temporary files
-    'tmp',
-    'temp',
-    '.temp',
-    '.tmp',
-
-    // Python specific
-    'python3.9',
-    'site-packages',
-    'env',
-    '__pycache__',
-    'lib',
-    'include',
-    'bin',
-    'migrations',
-    'python3',
-
-    // Localization and static
-    'LC_MESSAGES',
-    'locale',
-    'static',
-
-    // Package files
-    'package.json', 
-    'package-lock.json',
-    'yarn.lock',
-    'pnpm-lock.yaml',
-    'pnpm-workspace.yaml',
-
-    // License
-    'LICENSE.txt',
-    'LICENSE',
-    'LICENSE.md',
-    'LICENSE.markdown',
-
-    // Readme
-    /*
-    'README.md',
-    'README.txt',
-    'README',*/
-
-    // Procfile
-    'Procfile',
-
-    // Latest dump
-    'latest.dump',
-    '.dump',
-
-    // Runtime
-    'runtime.txt',
-
-    // Txt
-    '.txt',
-    
-    'i18n/',
-];
+=== File: ../token-gating-discord-bot-api/client/public/thirdweb.svg ===
+<svg width="1126" height="700" viewBox="0 0 1126 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3.06915 58.8968C-8.14591 30.5859 12.7549 0 43.3414 0H233.233C251.075 0 266.878 10.6166 273.505 27.047L424.654 404.189C428.732 414.3 428.732 425.675 424.654 436.039L329.58 672.89C315.052 709.037 263.564 709.037 249.036 672.89L3.06915 58.8968ZM369.861 57.6329C359.665 29.5748 380.566 0 410.643 0H576.065C594.416 0 610.729 11.3749 616.846 28.3109L754.231 405.453C757.544 414.805 757.544 425.169 754.231 434.775L671.647 661.515C657.883 699.431 603.847 699.431 590.083 661.515L369.861 57.6329ZM741.233 0C710.646 0 689.746 30.5859 700.961 58.8968L946.927 672.89C961.456 709.037 1012.94 709.037 1027.47 672.89L1122.54 436.039C1126.62 425.675 1126.62 414.3 1122.54 404.189L971.396 27.047C964.769 10.6166 948.966 0 931.124 0H741.233Z" fill="url(#paint0_linear_215_66)"/>
+<defs>
+<linearGradient id="paint0_linear_215_66" x1="563.567" y1="-165.278" x2="1341.59" y2="881.403" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F213A4"/>
+<stop offset="1" stop-color="#5204BF"/>
+</linearGradient>
+</defs>
+</svg>
 
 
 
-=== Directory: repo-scanners ===
+=== Directory: ../token-gating-discord-bot-api/client/styles ===
 
 
-=== File: repo-scanners/contentPrinter.mjs ===
-import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
-import { join } from 'path';
-import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
-
-console.log(outputPaths.content);
-
-export function shouldIgnore(path) {
-    const normalizedPath = path.toLowerCase();
-    
-    // Check if the path contains any of the ignore patterns
-    return ignorePatterns.some(pattern => {
-        // Check if pattern is in the path
-        if (normalizedPath.includes(pattern.toLowerCase())) {
-            return true;
-        }
-        
-        // Check for file extensions
-        if (pattern.startsWith('.') && normalizedPath.endsWith(pattern.toLowerCase())) {
-            return true;
-        }
-        
-        return false;
-    });
+=== File: ../token-gating-discord-bot-api/client/styles/Home.module.css ===
+.container {
+  margin-top: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  padding: 0 24px;
 }
 
-export function checkLineCount(filePath) {
-    try {
-        const content = readFileSync(filePath, 'utf8');
-        return content.split('\n').length;
-    } catch (error) {
-        console.error(`Error checking line count: ${error.message}`);
-        return 0;
-    }
+.pageContainer {
+  max-width: 600px;
+  width: 90vw;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-direction: row;
+  gap: 2%;
+  padding: 1rem;
 }
 
-export function appendToFile(contentPrintedPath, newContent) {
-    try {
-        // Check current line count
-        const currentLines = checkLineCount(contentPrintedPath);
-        const newLines = newContent.split('\n').length;
-        
-        // If adding this content would exceed 2000 lines, return false
-        if (currentLines + newLines > 2000) {
-            console.log('\n📊 Reached 2000 lines limit!');
-            console.log(`✨ Processing complete with ${currentLines} lines`);
-            console.log('📝 Results saved to: content.txt\n');
-            return false;
-        }
-        
-        // Otherwise, append the content and return true
-        writeFileSync(contentPrintedPath, newContent, { flag: 'a' });
-        return true;
-    } catch (error) {
-        console.error(`Error appending to file: ${error.message}`);
-        return false;
-    }
+.secondaryButton {
+  cursor: pointer;
+  text-align: center;
+  padding: 5px;
+  color: #fff;
+  font-weight: 600;
 }
 
-export function printDirectoryContent(directoryPath, level = 0) {
-    try {
-        if (checkLineCount(outputPaths.content) >= 2000) {
-            console.log('\n📊 Already at 2000 lines limit!');
-            console.log('✨ Processing complete');
-            console.log(`📝 Results saved to: ${outputPaths.content}\n`);
-            return false;
-        }
-
-        // Check if the directory itself should be ignored
-        if (shouldIgnore(directoryPath)) {
-            console.log(`Skipping ignored directory: ${directoryPath}`);
-            return true;
-        }
-
-        const files = readdirSync(directoryPath);
-        
-        // Process files first
-        for (const file of files) {
-            const filePath = join(directoryPath, file);
-            
-            // Skip if file should be ignored
-            if (shouldIgnore(filePath)) {
-                console.log(`Skipping ignored file: ${filePath}`);
-                continue;
-            }
-
-            const stats = statSync(filePath);
-            
-            if (stats.isFile()) {
-                const header = `\n\n=== File: ${filePath} ===\n`;
-                if (!appendToFile(outputPaths.content, header)) {
-                    return false;
-                }
-                
-                try {
-                    const fileContent = readFileSync(filePath, 'utf8');
-                    if (!appendToFile(outputPaths.content, fileContent + '\n')) {
-                        return false;
-                    }
-                    console.log(`✅ Successfully added: ${filePath}`);
-                } catch (error) {
-                    const errorMsg = `Error reading file: ${error.message}\n`;
-                    if (!appendToFile(outputPaths.content, errorMsg)) {
-                        return false;
-                    }
-                    console.error(`❌ Error processing: ${filePath}`);
-                }
-            }
-        }
-
-        // Then process directories
-        for (const file of files) {
-            const filePath = join(directoryPath, file);
-            
-            // Skip if directory should be ignored
-            if (shouldIgnore(filePath)) {
-                console.log(`Skipping ignored directory: ${filePath}`);
-                continue;
-            }
-
-            const stats = statSync(filePath);
-            
-            if (stats.isDirectory()) {
-                const header = `\n\n=== Directory: ${filePath} ===\n`;
-                if (!appendToFile(outputPaths.content, header)) {
-                    return false;
-                }
-                
-                if (!printDirectoryContent(filePath, level + 1)) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    } catch (error) {
-        console.error(`Error processing directory ${directoryPath}: ${error.message}`);
-        return false;
-    }
+.mainButton {
+  cursor: pointer;
+  display: inline-flex;
+  appearance: none;
+  align-items: center;
+  -webkit-box-align: center;
+  justify-content: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  line-height: 1.2;
+  font-weight: 600;
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, transform;
+  transition-duration: 200ms;
+  height: 3rem;
+  min-width: 3rem;
+  font-size: 1rem;
+  background: #e5e5ea;
+  background-image: linear-gradient(to left, #cc25b3 0%, #418dff 101.52%);
+  color: #fff;
+  width: 180px;
+  text-align: center;
+  border-radius: 9999px;
+  border-style: none;
 }
 
-// Clear the content.txt file before starting
-console.log(outputPaths.content);
-writeFileSync(outputPaths.content, '');
+.mainButton:hover {
+  opacity: 0.8;
+}
 
-const projectRoot = projectRootPath;
-// Start processing and handle completion
-console.log('\n🚀 Starting file processing...\n');
+.main {
+  width: 500px;
+  max-width: 90vw;
+  min-height: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px;
+  margin-top: 48px;
+}
 
-const success = printDirectoryContent(projectRoot);
+.collectionContainer {
+  width: 1200px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2%;
+}
 
-if (success) {
-    const finalLineCount = checkLineCount(outputPaths.content);
-    console.log('\n✨ Processing complete!');
-    console.log(`📊 Total lines processed: ${finalLineCount}`);
-    console.log('📝 Results saved to: content.txt\n');
-} else {
-    const finalLineCount = checkLineCount(outputPaths.content);
-    if (finalLineCount >= 2000) {
-        // Don't need to print anything here as the message is already shown
-    } else {
-        console.log(`✨ Processing complete with ${finalLineCount} lines`);
-        console.log('📝 Results saved to: content.txt\n');
-    }
+.divider {
+  width: 50%;
+  border-color: grey;
+  opacity: 0.25;
+}
+
+.nftBoxGrid {
+  width: 1200px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1%;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.nftBox {
+  border-radius: 16px;
+  border: 1px solid #ccc;
+  width: 19%;
+  min-height: 200px;
+}
+
+/* Between 1200 and 800 */
+@media only screen and (min-width: 800px) and (max-width: 1200px) {
+  .nftBox {
+    width: 49%;
+    margin-top: 16px;
+  }
+}
+
+/* beneath 800
+*/
+@media only screen and (max-width: 800px) {
+  .nftBoxGrid {
+    justify-content: center;
+  }
+  .nftBox {
+    width: 90%;
+    margin-top: 16px;
+  }
+}
+
+/* Screen less than 630, then hide .center */
+@media only screen and (max-width: 630px) {
+  .center {
+    display: none;
+  }
+}
+
+.spacerTop {
+  margin-top: 16px;
+}
+
+.bigSpacerTop {
+  margin-top: 32px;
+}
+
+.spacerBottom {
+  margin-bottom: 16px;
+}
+
+.detailPageContainer {
+  max-width: 800px;
+}
+
+.detailPageHr {
+  margin-top: 0px;
+  margin-bottom: 32px;
+}
+
+.lightPurple {
+  color: #e011a7;
+}
+
+.nftMedia {
+  width: 100%;
+  max-height: 300px;
+  border-radius: 15px;
+}
+
+.noGapBottom {
+  margin-bottom: 0px;
 }
 
 
-=== File: repo-scanners/projectSnapshotPrinter.mjs ===
-import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { outputPaths } from '../config.mjs';
-import { createFileStructureFile } from './treePrinter.mjs';
-import { printDirectoryContent } from './contentPrinter.mjs';
-import { projectRootPath } from '../config.mjs';
 
-// Helper function to determine snapshot type
-function getSnapshotType(path) {
-    const segments = path.split('/');
-    const currentDir = segments.filter(Boolean).pop();
-    
-    if (segments.filter(Boolean).length <= 1) {
-        return 'Full Project';
-    }
-    return `Partial Project (${currentDir} directory)`;
+=== File: ../token-gating-discord-bot-api/client/styles/globals.css ===
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-// Helper function to get context description
-function getContextDescription(path) {
-    const segments = path.split('/');
-    const currentDir = segments.filter(Boolean).pop();
-    
-    if (segments.filter(Boolean).length <= 1) {
-        return 'the complete project structure';
-    }
-    return `only the ${currentDir} directory and its contents`;
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+  padding-bottom: 275px;
 }
 
-// Function to find and parse README.md from project root
-function findAndParseReadme(startPath) {
-    const readmePath = join(startPath, 'README.md');
-    console.log('\n🔍 Looking for README at:', readmePath);
-    
-    if (existsSync(readmePath)) {
-        try {
-            const content = readFileSync(readmePath, 'utf8');
-            console.log('📖 Successfully read README.md');
-            const lines = content.split('\n');
-            
-            let hashA = '';
-            let contentA = '';
-            let hashB = '';
-            let contentB = '';
-            let hashC = '';
-            let contentC = '';
-            let hashD = '';
-            
-            let currentContent = '';
-            let hashCount = 0;
-            let isCollectingContentC = false;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                
-                // Check for # or ## (but not ###)
-                if (line.match(/^#{1,2}\s/) && !line.match(/^#{3,}\s/)) {
-                    hashCount++;
-                    
-                    if (hashCount === 1) {
-                        hashA = line;
-                    } else if (hashCount === 2) {
-                        contentA = currentContent.trim();
-                        hashB = line;
-                    } else if (hashCount === 3) {
-                        contentB = currentContent.trim();
-                        hashC = line;
-                        isCollectingContentC = true;
-                    } else if (hashCount === 4) {
-                        hashD = line;
-                        contentC = currentContent.trim();
-                        break;
-                    }
-                    currentContent = '';
-                } else {
-                    currentContent += line + '\n';
-                }
-            }
-            
-            // Handle case where we don't hit a fourth heading
-            if (hashCount === 1) {
-                contentA = currentContent.trim();
-            } else if (hashCount === 2) {
-                contentB = currentContent.trim();
-            } else if (hashCount === 3) {
-                contentC = currentContent.trim();
-            }
-            
-            const result = {
-                hashA: hashA.replace(/^#+\s+/, '').trim(),
-                contentA: contentA,
-                hashB: hashB.replace(/^#+\s+/, '').trim(),
-                contentB: contentB,
-                hashC: hashC.replace(/^#+\s+/, '').trim(),
-                contentC: contentC
-            };
-            
-            console.log('\n📝 Parsed sections:', {
-                hashA: result.hashA,
-                hashB: result.hashB,
-                hashC: result.hashC,
-                hashD: hashD.replace(/^#+\s+/, '').trim()
-            });
-            
-            return result;
-            
-        } catch (error) {
-            console.error('❌ Error parsing README:', error);
-            return null;
-        }
-    }
-    console.log('❌ README.md not found');
-    return null;
+/* Inherit fonts */
+input,
+button,
+textarea,
+select {
+  font: inherit;
 }
 
-// Function to find the nearest package.json
-function findNearestPackageJson(startPath) {
-    console.log('\n🔍 Starting package.json search from:', startPath);
-    let currentPath = startPath;
-    
-    while (currentPath !== '/') {
-        const packagePath = join(currentPath, 'package.json');
-        console.log('Checking for package.json at:', packagePath);
-        
-        if (existsSync(packagePath)) {
-            console.log('✅ Found package.json at:', packagePath);
-            try {
-                const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
-                console.log('📦 Successfully parsed package.json');
-                const technologies = {
-                    dependencies: packageJson.dependencies || {},
-                    devDependencies: packageJson.devDependencies || {},
-                    path: packagePath
-                };
-                return technologies;
-            } catch (error) {
-                console.error('❌ Error parsing package.json:', error);
-                console.error('At path:', packagePath);
-                return null;
-            }
-        }
-        
-        const previousPath = currentPath;
-        currentPath = dirname(currentPath);
-        console.log('⬆️  Moving up to parent directory:', currentPath);
-        
-        // Prevent infinite loop
-        if (currentPath === previousPath) {
-            console.log('🛑 Reached root directory, stopping search');
-            break;
-        }
-    }
-    
-    console.log('❌ No package.json found in project hierarchy');
-    return null;
+:root {
+  --background-color: #1c1e21;
+  --white: #ffffff;
+  --tw-color1: #a855f7;
+  --tw-color1-hover: #9333ea;
 }
 
-// Function to format technologies
-function formatTechnologies(technologies) {
-    if (!technologies) return 'No package.json found in project hierarchy';
-    
-    const { dependencies, devDependencies, path } = technologies;
-    let output = '';
-    
-    output += '=================================\n';
-    output += '      PROJECT TECHNOLOGIES\n';
-    output += '=================================\n';
-    output += `Located package.json: ${path}\n\n`;
-
-    if (Object.keys(dependencies).length > 0) {
-        output += '📦 Main Dependencies\n';
-        output += '-------------------\n';
-        Object.entries(dependencies)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .forEach(([name, version]) => {
-                output += `• ${name.padEnd(20)} ${version}\n`;
-            });
-    }
-    
-    if (Object.keys(devDependencies).length > 0) {
-        output += '\n🛠️  Dev Dependencies\n';
-        output += '-------------------\n';
-        Object.entries(devDependencies)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .forEach(([name, version]) => {
-                output += `• ${name.padEnd(20)} ${version}\n`;
-            });
-    }
-    
-    return output + '\n';
+body {
+  background: var(--background-color);
+  font-family: "Inter", sans-serif;
+  color: var(--white);
+  display: flex;
+  margin: 0;
+  text-align: center;
 }
 
-async function generateprojectSnapshot() {
-    console.log('\n🚀 Starting combined tree and content generation...\n');
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
 
-    // Step 1: Generate tree structure
-    console.log('📁 Generating tree structure...');
-    createFileStructureFile(projectRootPath);
-
-    // Step 2: Generate content
-    console.log('\n📄 Generating content...');
-    const success = printDirectoryContent(projectRootPath);
-
-    // Step 3: Combine the files
-    console.log('\n🔄 Combining files...');
-    try {
-        const treeContent = readFileSync(outputPaths.tree, 'utf8');
-        console.log('Successfully read tree content');
-        const fileContent = readFileSync(outputPaths.content, 'utf8');
-        console.log('Successfully read file content');
-        const technologies = findNearestPackageJson(projectRootPath);
-        console.log('Successfully found nearest package.json');
-        const readmeInfo = findAndParseReadme(projectRootPath);
-        console.log('Successfully parsed README.md');
-        
-        const combinedContent = `# Project Snapshot of ${readmeInfo?.hashA || 'Unknown Project'}
-
-${readmeInfo?.contentA || ''}
-
-## ${readmeInfo?.hashB || 'Description'}
-${readmeInfo?.contentB || 'No description available'}
-
-## ${readmeInfo?.hashC || 'Features'}
-${readmeInfo?.contentC || 'No features listed'}
-
-This is an automated project snapshot generated for AI assistance.
-
-## Project Context
-- Full Path: ${projectRootPath}
-- Type: ${getSnapshotType(projectRootPath)}
-- Generated: ${new Date().toLocaleString()}
-
-## Important Notes
-- This snapshot shows ${getContextDescription(projectRootPath)}
-- Files over 2000 lines are truncated
-- Binary files and dependencies are excluded
-
-${formatTechnologies(technologies)}
-=================================
-           FILE TREE
-=================================
-Directory structure for: ${projectRootPath}
-
-${treeContent}
-
-=================================
-         FILE CONTENTS
-=================================
-File contents for: ${projectRootPath}
-Each file is preceded by its full path.
-
-${fileContent}
-
-=================================
-       ADDITIONAL NOTES
-=================================
-- Generated using repository-content-printer
-- Node modules and build outputs excluded
-- See config.mjs for complete ignore list
-`;
-
-        writeFileSync(outputPaths.combined, combinedContent);
-        
-        console.log('\n✨ Combined file generated successfully!');
-        console.log(`📝 Results saved to: ${outputPaths.combined}\n`);
-    } catch (error) {
-        console.error('❌ Error combining files:', error);
-    }
 }
 
-// Run the combined generation
-generateprojectSnapshot(); 
 
 
-=== File: repo-scanners/treePrinter.mjs ===
-import { readdirSync, statSync, writeFileSync } from 'fs';
-import { join, basename } from 'path';
-import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
+=== File: ../token-gating-discord-bot-api/client/.babelrc ===
+{
+    "presets": ["next/babel"],
+    "plugins": []
+  }
 
-export function shouldSkipRecursion(path) {
-    const dirName = basename(path);
-    return ignorePatterns.some(pattern => 
-        dirName === pattern || 
-        path.includes(`/${pattern}/`)
+
+=== File: ../token-gating-discord-bot-api/client/.eslintrc.json ===
+{
+  "extends": [
+    "next"
+  ]
+}
+
+
+
+=== File: ../token-gating-discord-bot-api/client/README.md ===
+## Getting Started
+
+Create a project using this example:
+
+```bash
+npx thirdweb create --template next-typescript-starter
+```
+
+You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+
+On `pages/_app.tsx`, you'll find our `ThirdwebProvider` wrapping your app, this is necessary for our [hooks](https://portal.thirdweb.com/react) and
+[UI Components](https://portal.thirdweb.com/ui-components) to work.
+
+### Deploy to IPFS
+
+Deploy a copy of your application to IPFS using the following command:
+
+```bash
+yarn deploy
+```
+
+## Learn More
+
+To learn more about thirdweb and Next.js, take a look at the following resources:
+
+- [thirdweb React Documentation](https://docs.thirdweb.com/react) - learn about our React SDK.
+- [thirdweb TypeScript Documentation](https://docs.thirdweb.com/typescript) - learn about our JavaScript/TypeScript SDK.
+- [thirdweb Portal](https://docs.thirdweb.com) - check our guides and development resources.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+
+You can check out [the thirdweb GitHub organization](https://github.com/thirdweb-dev) - your feedback and contributions are welcome!
+
+## Join our Discord!
+
+For any questions, suggestions, join our discord at [https://discord.gg/thirdweb](https://discord.gg/thirdweb).
+
+
+
+=== File: ../token-gating-discord-bot-api/client/next.config.js ===
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  basePath: '/token-gating-discord-bot-api',
+  assetPrefix: '/token-gating-discord-bot-api/',
+  images: {
+    unoptimized: true,
+  },
+}
+
+module.exports = nextConfig
+
+
+=== File: ../token-gating-discord-bot-api/client/tsconfig.json ===
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
+
+
+=== Directory: ../token-gating-discord-bot-api/client/components ===
+
+
+=== File: ../token-gating-discord-bot-api/client/components/SignIn.tsx ===
+import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import React from "react";
+import styles from "../styles/Home.module.css";
+
+export default function SignIn() {
+  const address = useAddress();
+  const { data: session } = useSession();
+
+  // 1. The user is signed into discord and connected to wallet.
+  if (session && address) {
+    return (
+      <div className={styles.bigSpacerTop}>
+        <a onClick={() => signOut()} className={styles.secondaryButton}>
+          Sign out of Discord
+        </a>
+      </div>
     );
+  }
+
+  // 2. Connect Wallet
+  if (!address) {
+    return (
+      <div className={styles.main}>
+        <h2 className={styles.noGapBottom}>Connect Your Wallet</h2>
+        <p>Connect your wallet to check eligibility.</p>
+        <ConnectWallet accentColor="#F213A4" colorMode="dark" />
+      </div>
+    );
+  }
+
+  // 3. Connect with Discord (OAuth)
+  if (!session) {
+    return (
+      <div className={`${styles.main}`}>
+        <h2 className={styles.noGapBottom}>Sign In with Discord</h2>
+        <p>Sign In with Discord to check your eligibility for the NFT!</p>
+        <button
+          onClick={() => signIn("discord")}
+          className={`${styles.mainButton} ${styles.spacerTop}`}
+        >
+          Connect Discord
+        </button>
+      </div>
+    );
+  }
+
+  return null;
 }
 
-// Function to get the file structure recursively
-export function gettreeStructure(dir, level = 0) {
-    let structure = '';
+
+
+=== Directory: ../token-gating-discord-bot-api/client/pages ===
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/_app.tsx ===
+import type { AppProps } from "next/app";
+import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
+import { SessionProvider } from "next-auth/react";
+import "../styles/globals.css";
+
+// This is the chainId your dApp will work on.
+const activeChainId = ChainId.Mumbai;
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <ThirdwebProvider desiredChainId={activeChainId}>
+      <SessionProvider session={pageProps.session}>
+        <Component {...pageProps} />
+      </SessionProvider>
+    </ThirdwebProvider>
+  );
+}
+
+export default MyApp;
+
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/index.tsx ===
+import { useAddress, useSDK } from "@thirdweb-dev/react";
+import type { NextPage } from "next";
+import { useSession } from "next-auth/react";
+import SignIn from "../components/SignIn";
+import styles from "../styles/Home.module.css";
+
+const Home: NextPage = () => {
+  const address = useAddress(); // Get the user's address
+  const { data: session } = useSession(); // Get the user's session which contains the user's address
+  const sdk = useSDK(); // Get the Thirdweb SDK
+
+  async function requestGrantRole() {
+    // First, login and sign a message
+    const loginPayload = await sdk?.auth.login("http://localhost:3000"); // This will open a modal to login and sign a message
+    // Then make a request to our API endpoint.
+    try {
+      const response = await fetch("api/grant-role", {
+        method: "POST",
+        body: JSON.stringify({
+          loginPayload // This is the payload you got from the login step,
+        }),
+      });
+
+      const data = await response.json();
+      console.log('data');
+      console.log(data);
+      // have the alert read the console and format the message
+      (function() {
+        var exLog = console.log;
+        console.log = function(msg) {
+            // @ts-ignore
+            exLog.apply(this, arguments);
+            msg = JSON.stringify(msg, null, 4);
+            // remove the first and last characters
+            msg = msg.substring(18, msg.length - 3);
+            alert(msg);
+        }
+    })();
+    console.log(data);
+      //alert("Check the console for the response!"); 
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  return (
+    <div>
+      <div className={styles.container} style={{ marginTop: 0 }}>
+        <SignIn />
+        {address && session && (
+          <div className={styles.collectionContainer}>
+            <button className={styles.mainButton} onClick={requestGrantRole}>
+              Give me the role!
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+
+
+=== Directory: ../token-gating-discord-bot-api/client/pages/api ===
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/grant-role.tsx ===
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { unstable_getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
+import { ethers } from "ethers";
+//import discord from "discord.js";
+require("dotenv").config();
+import {createUser, getUser, emptyUser} from "./users";
+import { getAllTokens} from "./tokens";
+import { updateRoleForToken} from "./update-roles";
+import { assignMessage } from "./message";
+
+const abi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"indexed":false,"internalType":"uint256[]","name":"values","type":"uint256[]"}],"name":"TransferBatch","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"TransferSingle","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"value","type":"string"},{"indexed":true,"internalType":"uint256","name":"id","type":"uint256"}],"name":"URI","type":"event"},{"inputs":[],"name":"GRYFFINDOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"HUFFLEPUFF","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RAVENCLAW","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SLYTHERIN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"accounts","type":"address[]"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"burnBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"uint256[]","name":"_burnIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_burnAmounts","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintAmounts","type":"uint256[]"}],"name":"burnForMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"mintBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeBatchTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"string","name":"_uri","type":"string"}],"name":"setURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"uri","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+
+export default async function grantRole(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    // Get the login payload out of the request
+    const { loginPayload } = JSON.parse(req.body);
+    // Get the Next Auth session so we can use the user ID as part of the discord API request
+    const session = await unstable_getServerSession(req, res, authOptions);
+    if (!session) {
+        res.status(401).json({ error: "Not logged in" });
+        return;
+    }
+    const sdk = new ThirdwebSDK("mumbai");
+    const provider = new ethers.providers.JsonRpcProvider(
+        "https://matic-mumbai.chainstacklabs.com"
+    );
+    const hogwartsContract = new ethers.Contract(
+        process.env.CONTRACT_ADDRESS as string,
+        abi,
+        provider
+    ); 
+    const verifiedWalletAddress = sdk.auth.verify(
+        "http://localhost:3000",
+        loginPayload
+    ); // Verify the login payload is real and valid
+    if (!verifiedWalletAddress) {// If the login payload is not valid, return an error
+        res.status(401).json({ error: "Invalid login payload" });
+        return;
+    }
+    // @ts-ignore
+    const { userId } = session; 
+    // temp data for testing:
+    // const user_id = process.env.DISCORD_USER_ID as string;
+    console.log("User ID: " + userId);
+
+    let user = await getUser(userId);
+     if (!user) {
+        console.log("user does not exist in db adding new user");
+        user = await createUser(userId, verifiedWalletAddress);
+     // if user exists in database: then update the user
+     } else { 
+        console.log("User Exists Updating User in Db");
+        // await updateUser(user_id, verifiedWalletAddress);
+        // remove the user data from the database each time for testing
+        await emptyUser(userId);
+    }
+    // get all the tokens from the database and put their ids in an array
+    const tokensInContract = await getAllTokens();
+    for (let i = 0; i < tokensInContract.length; i++) {
+        const balanceOfATokenInWallet = await hogwartsContract.balanceOf(verifiedWalletAddress,tokensInContract[i]._id);
+        console.log('Your Wallet Address : ' + verifiedWalletAddress + 'Token ID: ' + tokensInContract[i]._id + ' Balance: ' + balanceOfATokenInWallet.toNumber());
+        // check if the user roles need to be updated
+        updateRoleForToken(userId, tokensInContract[i]._id, verifiedWalletAddress, balanceOfATokenInWallet.toNumber());
+        if(i===tokensInContract.length-1){
+            console.log('Finished updating all tokens');
+            res.status(200).json({ message: assignMessage('', '', true, true) });
+        }
+    }
+}
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/message.tsx ===
+const messages: string[] = [];
+export function assignMessage (role_name: string, role_type: string, writeType: boolean, readType: boolean) {
+
+    function roleRemoveMessage (role_name: string)  {
+        return `You have been Removed from the ${role_name} Level role for Token Type ${role_type}!
+        You no longer are in possession of enough tokens to hold this role! !!`;
+    };
+    function roleAssignMessage (role_name: string) {
+        return `You have been Granted the ${role_name} Level role! Level role for Token Type ${role_type}!`;
+    };
     
-    // Get all files and directories within the directory
-    const items = readdirSync(dir);
-    
-    // Separate and sort directories and files
-    const directories = items
-        .filter(item => statSync(join(dir, item)).isDirectory())
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    
-    const files = items
-        .filter(item => statSync(join(dir, item)).isFile())
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    
-    // Process directories first
-    directories.forEach((item, index) => {
-        const fullPath = join(dir, item);
-        const isLast = index === directories.length - 1 && files.length === 0;
-        
-        // Add directory to structure
-        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}/\n`;
-        
-        if (!shouldSkipRecursion(fullPath)) {
-            structure += gettreeStructure(fullPath, level + 1);
+    if (writeType && !readType) {
+        messages.push(roleAssignMessage(role_name));
+    } else if (!readType && !writeType){
+        messages.push(roleRemoveMessage(role_name));
+    }
+
+    if (readType) {
+        return messages.join(" ");
+    }
+}
+
+
+
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/tokens.tsx ===
+
+export async function createToken(token_id: number, token_roles: [], type: string) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                _id: token_id,
+                token_roles: token_roles,
+                type: type
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
+}
+
+export async function getToken(token_id: number) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
         }
     });
-    
-    // Then process files
-    files.forEach((item, index) => {
-        const isLast = index === files.length - 1;
-        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}\n`;
+    const data = await response.json();
+    return data;
+
+}
+export async function updateToken(token_id: number, token_roles: [], type: string) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                token_roles: token_roles,
+                type: type,
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
+}
+export async function deleteToken(token_id: number) {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+export async function getAllTokens() {
+    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/update-roles.tsx ===
+import {getUser, updateUser} from "./users";
+import { getToken} from "./tokens";
+import { assignMessage } from "./message";
+
+export async function grantDiscordRole(user_id: string, role_id: string) {
+    const response = await fetch(
+        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
+        {
+          headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
+          },
+          method: "PUT",
+        }
+    );
+    const data = await response.json();
+    return data;
+}
+export async function removeDiscordRole(user_id: string, role_id: string) {
+    const response = await fetch(
+        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
+        {
+          headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
+          },
+          method: "DELETE",
+        }
+    );
+    const data = await response.json();
+    return data;
+}
+export async function hasDiscordRole(user_id: string, role_id: string) {
+    const response = await fetch(
+        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
+        {
+          headers: {
+            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
+          },
+          method: "GET",
+        }
+    );
+    const data = await response.json();
+    return data;
+}
+
+export async function updateRoleForToken(user_id: string, token_id: number, walletAddress: string, walletBalance: number) {
+  // get the token roles
+  const token = await getToken(token_id);
+  const token_type = token.type;
+  const token_roles = token.token_roles; // returns an array of objects
+  // get the user roles
+  const user = await getUser(user_id);
+  const user_roles = user.user_roles;
+  // function to determine if user already has role
+  function userHasRole (user_roles_arr:[], role_id: string) {
+    // @ts-ignore
+    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
+    return role_arr
+  }
+  // update the user roles
+  function roleUpdate(token_id: number, role_id: string, i: number) {
+    // determine if user already has role
+    const hasRoleArr = userHasRole(user_roles, role_id);
+    const hasRole = hasRoleArr.length > 0;
+    // calculate the curr next and previous role amounts
+    const currAmt = token_roles[i].required_amount;
+    const nxtAmt = token_roles[i++].required_amount;
+    const prvAmt = token_roles[i--].required_amount;
+    const thisRoleName = token_roles[i].role_name;
+    // determine if the user curr role matches the token role price
+    const atTop = walletBalance >= currAmt && token_roles.length - 2 === i;
+    const keepRole =
+      (walletBalance >= currAmt && walletBalance < nxtAmt) ||
+      (walletBalance >= currAmt && token_roles.length - 2 === i);
+    const moveDown =
+      walletBalance < currAmt && walletBalance >= prvAmt && i != 0;
+    const moveUp = walletBalance >= nxtAmt && token_roles.length - 2 != i;
+    const atBottom = i === 0;
+    const zeroBalance = walletBalance === 0;
+    // add post role to the user and discord
+    function addRole(message: string) {
+      const newToken = {
+        _id: token_id,
+        token_roles: [
+          {
+            _id: role_id,
+            token_id: token_id,
+            role_name: thisRoleName,
+            required_amount: currAmt,
+          },
+        ],
+        type: token_type,
+      };
+      const newRole = {
+        _id: role_id,
+        token_id: token_id,
+        role_name: thisRoleName,
+        required_amount: currAmt,
+      };
+      // if user has the role, createUser will update the user
+      user.public_address = walletAddress;
+      // add new token to the user
+      const tokensArr = user.tokens;
+      tokensArr.push(newToken);
+      // add new role to the user
+      const rolesArr = user.user_roles;
+      rolesArr.push(newRole);
+      // update the user
+      updateUser(user_id, user.public_address, tokensArr, rolesArr);
+      //grant the role discord role to the user
+      grantDiscordRole(user_id, role_id);
+      // message the user about the updates
+      assignMessage(token_roles[i].role_name, token_type, true, false);
+      console.log(message);
+    }
+    // remove the role from the user and discord
+    function removeRole(message: string, token_id?: number) {
+      user.public_address = walletAddress;
+      // remove the role from the user
+      const rolesArr = user.user_roles;
+      rolesArr.splice(rolesArr.indexOf(role_id), 1);
+      // remove the token from the user if balance is zero
+      const tokensArr = user.tokens;
+      // if token_id is passed in, remove the token from the user
+      if (token_id) {
+        console.log(
+          "Removing Token Data from User Because Balance is Zero " + token_id
+        );
+        tokensArr.splice(tokensArr.indexOf(token_id), 1);
+      }
+      updateUser(user_id, user.public_address, tokensArr, rolesArr);
+      // remove the discord role from the user
+      removeDiscordRole(user_id, role_id);
+      // message the user about the updates
+      console.log(message);
+      assignMessage(token_roles[i].role_name, token_type, false, false);
+    }
+    function keptRole(message: string) {
+      //update user balances
+      updateUser(user_id, user.public_address, user.tokens, user.user_roles);
+      // assign result message
+      assignMessage(token_roles[i].role_name, token_type, false, false);
+      // message the user about the updates
+      console.log(message);
+    }
+
+    if (atTop) {
+      hasRole === true ?keptRole("Congrats "+user_id+" Kept Role"+role_id+" Reached the Maxiumum Role Level for Token Thank You!!"):addRole("Congrats "+user_id+" You've qualified for a new role : "+role_id+" Upgrading Your Role Status....");
+    } else if (keepRole) {
+      hasRole === true ?keptRole("Dear "+user_id+" Kept Role "+role_id+"Buy more tokens to Increase Role Level!!!!"):addRole("Congrats "+user_id+" You've qualified for a new role :"+role_id+" Upgrading Your Role Status....");
+    } else if (moveUp) {
+      hasRole?removeRole("Congrats "+user_id+" Previous Role :"+role_id+" Was Removed. Upgrading Your Role Status...."):console.log("Congrats "+user_id+" You're over qualified for this role : "+role_id+" Upgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i++);
+    } else if (moveDown) {
+      hasRole?removeRole("Dear "+user_id+" Previous Role :"+role_id+"Was Removed. Downgrading Your Role Status...."+role_id):console.log("Dear "+user_id+"You're no longer qualified for this role :"+role_id+" Downgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i--);
+    } else if (atBottom) {
+      hasRole?removeRole("Unfortunately "+ +user_id+" Previous Role :"+role_id+" Was Removed You're no longer qualified for this role : "+role_id+" or any other role for this token please purchase more tokens to get a role for this token"):console.log("Unfortunately "+user_id+"You're not qualified for this role"+role_id+"or any other role for this token please purchase more tokens to get a role for this token");
+    } else if (zeroBalance) {
+      hasRole?removeRole("Dear "+user_id+" Zero Balance: No longer own tokens removing token from db",token_id):console.log("Dear "+user_id+" Zero Balance: You dont own any tokens for this token");
+    } else {
+      console.log("Something went wrong");
+    }
+  }
+  roleUpdate(token_id, token_roles[0]._id, 0);
+}
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/users.tsx ===
+
+export async function createUser(user_id: string, public_address?: string, tokens? : [], roles?: []) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                _id: user_id,
+                public_address: public_address,
+                tokens: tokens? tokens : [],
+                user_roles: roles? roles : []
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
+}
+export async function getUser(user_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
     });
-    
-    return structure;
+    const data = await response.json();
+    return data;
+}
+export async function updateUser(user_id: string, public_address?: string, tokens? : [], user_roles?: []) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                public_address: public_address? public_address : "",
+                tokens: tokens? tokens : [],
+                user_roles: user_roles? user_roles : []
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
 }
 
-// Function to create the treeStructure.txt
-export function createFileStructureFile(rootDir) {
-    // Initialize/clear the tree file
-    writeFileSync(outputPaths.tree, '');
-    
-    const structure = `## Project Structure
-
-\`\`\`
-${basename(rootDir)}/\n${gettreeStructure(rootDir)}
-\`\`\``;
-    
-    // Write to file using the configured path
-    writeFileSync(outputPaths.tree, structure, 'utf-8');
-    console.log(structure);
-    console.log(`Tree structure saved to: ${outputPaths.tree}`);
+export async function deleteUser(user_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+// get all users
+export async function getAllUsers() {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+    const data = await response.json();
+    return data;
+}
+// see if user has a particular role
+export async function userHasRole(user_id: string, role_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+    const data = await response.json();
+    const user_roles_arr = data.user_roles;
+    // @ts-ignore
+    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
+    return role_arr
+}
+// see if user has a particular token
+export async function userHasToken(user_id: string, token_id: number) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+    const data = await response.json();
+    const user_tokens_arr = data.tokens;
+    // @ts-ignore
+    const token_arr = user_tokens_arr.filter((item) => { return item._id === token_id});
+    return token_arr
+}
+// empty user tokens
+export async function emptyUser(user_id: string) {
+    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+            {   
+                tokens: [],
+                user_roles: []
+            }
+        )
+    })
+    const data = await response.json();
+    return data;
 }
 
-// Optional: Move this to a separate file
-const projectRoot = projectRootPath;
-createFileStructureFile(projectRoot);
 
+
+
+=== Directory: ../token-gating-discord-bot-api/client/pages/api/auth ===
+
+
+=== File: ../token-gating-discord-bot-api/client/pages/api/auth/[...nextauth].tsx ===
+import NextAuth, { NextAuthOptions } from "next-auth";
+import DiscordProvider from "next-auth/providers/discord";
+require("dotenv").config();
+
+export const authOptions: NextAuthOptions = {
+  // Configure one or more authentication providers
+  providers: [
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID as string,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+    }),
+  ],
+
+  // When the user signs in, get their token
+  callbacks: {
+    async jwt({ token, account }) {
+      // Persist the user ID to the token right after signin
+      if (account) {
+        console.log(account);
+        token.userId = account.providerAccountId;
+      }
+      return token;
+    },
+    
+    async session({ session, token }) {
+      // @ts-ignore
+      session.userId = token.userId;
+      return session;
+    },
+  },
+};
+
+export default NextAuth(authOptions);
+
+
+=== Directory: ../token-gating-discord-bot-api/client/public ===
+
+
+=== File: ../token-gating-discord-bot-api/client/public/thirdweb.svg ===
+<svg width="1126" height="700" viewBox="0 0 1126 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3.06915 58.8968C-8.14591 30.5859 12.7549 0 43.3414 0H233.233C251.075 0 266.878 10.6166 273.505 27.047L424.654 404.189C428.732 414.3 428.732 425.675 424.654 436.039L329.58 672.89C315.052 709.037 263.564 709.037 249.036 672.89L3.06915 58.8968ZM369.861 57.6329C359.665 29.5748 380.566 0 410.643 0H576.065C594.416 0 610.729 11.3749 616.846 28.3109L754.231 405.453C757.544 414.805 757.544 425.169 754.231 434.775L671.647 661.515C657.883 699.431 603.847 699.431 590.083 661.515L369.861 57.6329ZM741.233 0C710.646 0 689.746 30.5859 700.961 58.8968L946.927 672.89C961.456 709.037 1012.94 709.037 1027.47 672.89L1122.54 436.039C1126.62 425.675 1126.62 414.3 1122.54 404.189L971.396 27.047C964.769 10.6166 948.966 0 931.124 0H741.233Z" fill="url(#paint0_linear_215_66)"/>
+<defs>
+<linearGradient id="paint0_linear_215_66" x1="563.567" y1="-165.278" x2="1341.59" y2="881.403" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F213A4"/>
+<stop offset="1" stop-color="#5204BF"/>
+</linearGradient>
+</defs>
+</svg>
+
+
+
+=== Directory: ../token-gating-discord-bot-api/client/styles ===
+
+
+=== File: ../token-gating-discord-bot-api/client/styles/Home.module.css ===
+.container {
+  margin-top: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  padding: 0 24px;
+}
+
+.pageContainer {
+  max-width: 600px;
+  width: 90vw;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-direction: row;
+  gap: 2%;
+  padding: 1rem;
+}
+
+.secondaryButton {
+  cursor: pointer;
+  text-align: center;
+  padding: 5px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.mainButton {
+  cursor: pointer;
+  display: inline-flex;
+  appearance: none;
+  align-items: center;
+  -webkit-box-align: center;
+  justify-content: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  line-height: 1.2;
+  font-weight: 600;
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, transform;
+  transition-duration: 200ms;
+  height: 3rem;
+  min-width: 3rem;
+  font-size: 1rem;
+  background: #e5e5ea;
+  background-image: linear-gradient(to left, #cc25b3 0%, #418dff 101.52%);
+  color: #fff;
+  width: 180px;
+  text-align: center;
+  border-radius: 9999px;
+  border-style: none;
+}
+
+.mainButton:hover {
+  opacity: 0.8;
+}
+
+.main {
+  width: 500px;
+  max-width: 90vw;
+  min-height: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px;
+  margin-top: 48px;
+}
+
+.collectionContainer {
+  width: 1200px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2%;
+}
+
+.divider {
+  width: 50%;
+  border-color: grey;
+  opacity: 0.25;
+}
+
+.nftBoxGrid {
+  width: 1200px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1%;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.nftBox {
+  border-radius: 16px;
+  border: 1px solid #ccc;
+  width: 19%;
+  min-height: 200px;
+}
+
+/* Between 1200 and 800 */
+@media only screen and (min-width: 800px) and (max-width: 1200px) {
+  .nftBox {
+    width: 49%;
+    margin-top: 16px;
+  }
+}
+
+/* beneath 800
+*/
+@media only screen and (max-width: 800px) {
+  .nftBoxGrid {
+    justify-content: center;
+  }
+  .nftBox {
+    width: 90%;
+    margin-top: 16px;
+  }
+}
+
+/* Screen less than 630, then hide .center */
+@media only screen and (max-width: 630px) {
+  .center {
+    display: none;
+  }
+}
+
+.spacerTop {
+  margin-top: 16px;
+}
+
+.bigSpacerTop {
+  margin-top: 32px;
+}
+
+.spacerBottom {
+  margin-bottom: 16px;
+}
+
+.detailPageContainer {
+  max-width: 800px;
+}
+
+.detailPageHr {
+  margin-top: 0px;
+  margin-bottom: 32px;
+}
+
+.lightPurple {
+  color: #e011a7;
+}
+
+.nftMedia {
+  width: 100%;
+  max-height: 300px;
+  border-radius: 15px;
+}
+
+.noGapBottom {
+  margin-bottom: 0px;
+}
+
+
+
+=== File: ../token-gating-discord-bot-api/client/styles/globals.css ===
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+  padding-bottom: 275px;
+}
+
+/* Inherit fonts */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+:root {
+  --background-color: #1c1e21;
+  --white: #ffffff;
+  --tw-color1: #a855f7;
+  --tw-color1-hover: #9333ea;
+}
+
+body {
+  background: var(--background-color);
+  font-family: "Inter", sans-serif;
+  color: var(--white);
+  display: flex;
+  margin: 0;
+  text-align: center;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+
+}
 

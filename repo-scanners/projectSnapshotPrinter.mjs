@@ -5,6 +5,26 @@ import { createFileStructureFile } from './treePrinter.mjs';
 import { printDirectoryContent } from './contentPrinter.mjs';
 import { projectRootPath } from '../config.mjs';
 
+    function isUltimateRoot(path) {
+        console.log('🔍 Checking if path is ultimate root:', path);
+    
+        // Count the number of slashes in the path
+        const slashCount = (path.match(/\//g) || []).length;
+        
+        // If there's more than one slash, get everything before the second slash
+        if (slashCount > 1) {
+            console.log('🔍 Path contains multiple slashes, finding ultimate root');
+            const pathParts = path.split('/');
+            const ultimateRoot = pathParts[0] + '/' + pathParts[1];
+            console.log('🔍 Ultimate root found:', ultimateRoot);
+            return ultimateRoot;
+        }
+        
+        // If one or no slashes, return the path as is
+        console.log('🔍 Path is already ultimate root:', path);
+        return path;
+}
+
 // Helper function to determine snapshot type
 function getSnapshotType(path) {
     const segments = path.split('/');
@@ -210,7 +230,7 @@ async function generateprojectSnapshot() {
         console.log('Successfully read file content');
         const technologies = findNearestPackageJson(projectRootPath);
         console.log('Successfully found nearest package.json');
-        const readmeInfo = findAndParseReadme(projectRootPath);
+        const readmeInfo = findAndParseReadme(isUltimateRoot(projectRootPath));
         console.log('Successfully parsed README.md');
         
         const combinedContent = `# Project Snapshot of ${readmeInfo?.hashA || 'Unknown Project'}

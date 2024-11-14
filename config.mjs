@@ -3,7 +3,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 // Edit this path to the root of the project you want to scan
-export const projectRootPath = './'//'../token-gating-discord-bot-api/client';
+export const projectRootPath = '../token-gating-discord-bot-api/client';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
