@@ -1,0 +1,18 @@
+## Project Structure
+
+```
+./
+├── .git/
+├── output/
+│   ├── contentPrinted.txt
+│   ├── projectSnapshotPrinted.txt
+│   └── treePrinted.txt
+├── repo-scanners/
+│   ├── contentPrinter.mjs
+│   ├── projectSnapshotPrinter.mjs
+│   └── treePrinter.mjs
+├── .DS_Store
+├── config.mjs
+└── README.md
+
+```

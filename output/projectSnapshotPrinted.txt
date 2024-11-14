@@ -1,0 +1,1635 @@
+# Project Snapshot of Repository Content Tools
+
+A collection of Node.js utilities for generating comprehensive project documentation and snapshots. This toolkit includes three main components: Content Printer, Tree Printer, and Project Snapshot Generator.
+
+## Description
+This project provides a suite of tools for developers to generate detailed documentation and snapshots of their repositories. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits.
+
+## Features
+### Content Printer (contentPrinter.mjs)
+- 📄 Creates a consolidated file containing all project content
+- Enforces a 2000-line limit on output
+- 🚫 Skips binary files and common development artifacts
+- ✨ Provides real-time processing feedback
+
+### Tree Printer (treePrinter.mjs)
+- 🌳 Generates visual directory structure trees
+- 📁 Shows hierarchical file organization
+- 🔍 Supports custom ignore patterns
+- 🎯 Creates clean, formatted output
+
+### Project Snapshot Generator (projectSnapshotPrinter.mjs)
+- 📸 Creates comprehensive project snapshots
+- 📝 Extracts project documentation from README
+- 🛠️ Lists project dependencies and technologies
+- 🔄 Combines tree structure and content into one view
+
+This is an automated project snapshot generated for AI assistance.
+
+## Project Context
+- Full Path: ./
+- Type: Full Project
+- Generated: 11/14/2024, 11:31:46 AM
+
+## Important Notes
+- This snapshot shows the complete project structure
+- Files over 2000 lines are truncated
+- Binary files and dependencies are excluded
+
+No package.json found in project hierarchy
+=================================
+           FILE TREE
+=================================
+Directory structure for: ./
+
+## Project Structure
+
+```
+./
+├── .git/
+├── output/
+│   ├── contentPrinted.txt
+│   ├── projectSnapshotPrinted.txt
+│   └── treePrinted.txt
+├── repo-scanners/
+│   ├── contentPrinter.mjs
+│   ├── projectSnapshotPrinter.mjs
+│   └── treePrinter.mjs
+├── .DS_Store
+├── config.mjs
+└── README.md
+
+```
+
+=================================
+         FILE CONTENTS
+=================================
+File contents for: ./
+Each file is preceded by its full path.
+
+
+
+=== File: README.md ===
+# Repository Content Tools
+
+A collection of Node.js utilities for generating comprehensive project documentation and snapshots. This toolkit includes three main components: Content Printer, Tree Printer, and Project Snapshot Generator.
+
+## Description
+This project provides a suite of tools for developers to generate detailed documentation and snapshots of their repositories. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits.
+
+## Features
+
+### Content Printer (contentPrinter.mjs)
+- 📄 Creates a consolidated file containing all project content
+- Enforces a 2000-line limit on output
+- 🚫 Skips binary files and common development artifacts
+- ✨ Provides real-time processing feedback
+
+### Tree Printer (treePrinter.mjs)
+- 🌳 Generates visual directory structure trees
+- 📁 Shows hierarchical file organization
+- 🔍 Supports custom ignore patterns
+- 🎯 Creates clean, formatted output
+
+### Project Snapshot Generator (projectSnapshotPrinter.mjs)
+- 📸 Creates comprehensive project snapshots
+- 📝 Extracts project documentation from README
+- 🛠️ Lists project dependencies and technologies
+- 🔄 Combines tree structure and content into one view
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/mollybeach/repository-content-tools.git
+cd repository-content-tools
+```
+
+## Usage
+
+### Content Printer
+```bash
+node repo-scanners/contentPrinter.mjs
+```
+
+### Tree Printer
+```bash
+node repo-scanners/treePrinter.mjs
+```
+
+### Project Snapshot
+```bash
+node repo-scanners/projectSnapshotPrinter.mjs
+```
+
+## Configuration
+
+Modify `config.mjs` to customize:
+- Project root path
+- Output file locations
+- Ignore patterns
+- Line limits
+
+## Output Files
+
+The tools generate three main output files in the `output` directory:
+- `contentPrinted.txt`: Full content of all processed files
+- `treePrinted.txt`: Visual directory structure
+- `projectSnapshotPrinted.txt`: Combined project snapshot
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
+
+## License
+
+MIT
+
+## Author
+
+@mollybeach
+
+## Project Structure
+
+```
+./
+├── .git/
+├── output/
+│   ├── contentPrinted.txt
+│   ├── projectSnapshotPrinted.txt
+│   └── treePrinted.txt
+├── repo-scanners/
+│   ├── contentPrinter.mjs
+│   ├── projectSnapshotPrinter.mjs
+│   └── treePrinter.mjs
+├── .DS_Store
+├── config.mjs
+└── README.md
+
+```
+
+
+=== File: config.mjs ===
+import { join } from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// Edit this path to the root of the project you want to scan
+export const projectRootPath = './'//'../token-gating-discord-bot-api/client';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export const outputPaths = {
+    content: join(__dirname, 'output', 'contentPrinted.txt'),
+    tree: join(__dirname, 'output', 'treePrinted.txt'),
+    combined: join(__dirname, 'output', 'projectSnapshotPrinted.txt')
+};
+
+// Ignore Patterns
+export const ignorePatterns = [
+    // Dependencies
+    'node_modules', 'bower_components', 'jspm_packages', 'package-lock.json', 'yarn.lock',
+    // Build outputs
+    'dist', 'build', 'out', '.min.js', '.min.css',
+    // Environment and secrets
+    '.env', '.pem', '.secret',
+    // IDE and Editor files
+    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath', 
+    '.sublime-workspace', '.sublime-project',
+    // Logs
+    'logs', '.log', 'npm-debug.log', 'yarn-debug.log', 'yarn-error.log',
+    // Testing and Coverage
+    'coverage', '.nyc_output', '.jest', '__tests__',
+    // Temp files
+    'tmp', 'temp', '.temp', '.tmp',
+    // Compiled files
+    '.com', '.class', '.dll', '.exe', '.o', '.so',
+    // Package files
+    '.7z', '.dmg', '.gz', '.iso', '.jar', '.rar', '.tar', '.zip',
+    // Database
+    '.sqlite', '.db',
+    // Mobile
+    '.gradle', 'local.properties', '.apk', '.aab', '.ipa',
+    // Python
+    '__pycache, __pycache__', '.py[cod]', '.Python', 'env', 'venv', 'pip-log.txt',
+    // Ruby
+    '.gem', '.bundle', 'vendor',
+    // OS specific
+    '.DS_Store', '.AppleDouble', '.LSOverride', 'Icon', '._',
+    'Thumbs.db', 'ehthumbs.db', 'Desktop.ini',
+    // Git files
+    '.git',
+    '.gitignore',
+    '.gitattributes',
+    '.gitmodules',
+    '.github',
+    '.gitlab',
+    '.gitkeep',
+
+    // Package managers and dependencies
+    'node_modules',
+    'bower_components',
+    'jspm_packages',
+    'package-lock.json',
+    'yarn.lock',
+    'vendor',
+
+    // Build and output directories
+    'dist',
+    'build',
+    'out',
+    '.min.js',
+    '.min.css',
+
+    // Deployment directories
+    'deployment',
+    '.deploy',
+    '.kubernetes',
+    '.k8s',
+    'helm',
+    'terraform',
+    '.terraform',
+
+    // Environment and configuration
+    '.env',
+    '.pem',
+    '.secret',
+
+    // IDE and editor files
+    '.idea',
+    '.vscode',
+    '.swp',
+    '.swo',
+    '.DS_Store',
+    'Thumbs.db',
+
+    // Logs and coverage
+    'logs',
+    '.log',
+    'coverage',
+    '.nyc_output',
+
+    // Temporary files
+    'tmp',
+    'temp',
+    '.temp',
+    '.tmp',
+
+    // Python specific
+    'python3.9',
+    'site-packages',
+    'env',
+    '__pycache__',
+    'lib',
+    'include',
+    'bin',
+    'migrations',
+    'python3',
+
+    // Localization and static
+    'LC_MESSAGES',
+    'locale',
+    'static',
+
+    // Package files
+    'package.json', 
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
+
+    // License
+    'LICENSE.txt',
+    'LICENSE',
+    'LICENSE.md',
+    'LICENSE.markdown',
+
+    // Readme
+    /*
+    'README.md',
+    'README.txt',
+    'README',*/
+
+    // Procfile
+    'Procfile',
+
+    // Latest dump
+    'latest.dump',
+    '.dump',
+
+    // Runtime
+    'runtime.txt',
+
+    // Txt
+    '.txt',
+    
+    'i18n/',
+];
+
+
+
+=== Directory: repo-scanners ===
+
+
+=== File: repo-scanners/contentPrinter.mjs ===
+import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
+import { join } from 'path';
+import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
+
+console.log(outputPaths.content);
+
+export function shouldIgnore(path) {
+    const normalizedPath = path.toLowerCase();
+    
+    // Check if the path contains any of the ignore patterns
+    return ignorePatterns.some(pattern => {
+        // Check if pattern is in the path
+        if (normalizedPath.includes(pattern.toLowerCase())) {
+            return true;
+        }
+        
+        // Check for file extensions
+        if (pattern.startsWith('.') && normalizedPath.endsWith(pattern.toLowerCase())) {
+            return true;
+        }
+        
+        return false;
+    });
+}
+
+export function checkLineCount(filePath) {
+    try {
+        const content = readFileSync(filePath, 'utf8');
+        return content.split('\n').length;
+    } catch (error) {
+        console.error(`Error checking line count: ${error.message}`);
+        return 0;
+    }
+}
+
+export function appendToFile(contentPrintedPath, newContent) {
+    try {
+        // Check current line count
+        const currentLines = checkLineCount(contentPrintedPath);
+        const newLines = newContent.split('\n').length;
+        
+        // If adding this content would exceed 2000 lines, return false
+        if (currentLines + newLines > 2000) {
+            console.log('\n📊 Reached 2000 lines limit!');
+            console.log(`✨ Processing complete with ${currentLines} lines`);
+            console.log('📝 Results saved to: content.txt\n');
+            return false;
+        }
+        
+        // Otherwise, append the content and return true
+        writeFileSync(contentPrintedPath, newContent, { flag: 'a' });
+        return true;
+    } catch (error) {
+        console.error(`Error appending to file: ${error.message}`);
+        return false;
+    }
+}
+
+export function printDirectoryContent(directoryPath, level = 0) {
+    try {
+        if (checkLineCount(outputPaths.content) >= 2000) {
+            console.log('\n📊 Already at 2000 lines limit!');
+            console.log('✨ Processing complete');
+            console.log(`📝 Results saved to: ${outputPaths.content}\n`);
+            return false;
+        }
+
+        // Check if the directory itself should be ignored
+        if (shouldIgnore(directoryPath)) {
+            console.log(`Skipping ignored directory: ${directoryPath}`);
+            return true;
+        }
+
+        const files = readdirSync(directoryPath);
+        
+        // Process files first
+        for (const file of files) {
+            const filePath = join(directoryPath, file);
+            
+            // Skip if file should be ignored
+            if (shouldIgnore(filePath)) {
+                console.log(`Skipping ignored file: ${filePath}`);
+                continue;
+            }
+
+            const stats = statSync(filePath);
+            
+            if (stats.isFile()) {
+                const header = `\n\n=== File: ${filePath} ===\n`;
+                if (!appendToFile(outputPaths.content, header)) {
+                    return false;
+                }
+                
+                try {
+                    const fileContent = readFileSync(filePath, 'utf8');
+                    if (!appendToFile(outputPaths.content, fileContent + '\n')) {
+                        return false;
+                    }
+                    console.log(`✅ Successfully added: ${filePath}`);
+                } catch (error) {
+                    const errorMsg = `Error reading file: ${error.message}\n`;
+                    if (!appendToFile(outputPaths.content, errorMsg)) {
+                        return false;
+                    }
+                    console.error(`❌ Error processing: ${filePath}`);
+                }
+            }
+        }
+
+        // Then process directories
+        for (const file of files) {
+            const filePath = join(directoryPath, file);
+            
+            // Skip if directory should be ignored
+            if (shouldIgnore(filePath)) {
+                console.log(`Skipping ignored directory: ${filePath}`);
+                continue;
+            }
+
+            const stats = statSync(filePath);
+            
+            if (stats.isDirectory()) {
+                const header = `\n\n=== Directory: ${filePath} ===\n`;
+                if (!appendToFile(outputPaths.content, header)) {
+                    return false;
+                }
+                
+                if (!printDirectoryContent(filePath, level + 1)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error(`Error processing directory ${directoryPath}: ${error.message}`);
+        return false;
+    }
+}
+
+// Clear the content.txt file before starting
+console.log(outputPaths.content);
+writeFileSync(outputPaths.content, '');
+
+const projectRoot = projectRootPath;
+// Start processing and handle completion
+console.log('\n🚀 Starting file processing...\n');
+
+const success = printDirectoryContent(projectRoot);
+
+if (success) {
+    const finalLineCount = checkLineCount(outputPaths.content);
+    console.log('\n✨ Processing complete!');
+    console.log(`📊 Total lines processed: ${finalLineCount}`);
+    console.log('📝 Results saved to: content.txt\n');
+} else {
+    const finalLineCount = checkLineCount(outputPaths.content);
+    if (finalLineCount >= 2000) {
+        // Don't need to print anything here as the message is already shown
+    } else {
+        console.log(`✨ Processing complete with ${finalLineCount} lines`);
+        console.log('📝 Results saved to: content.txt\n');
+    }
+}
+
+
+=== File: repo-scanners/projectSnapshotPrinter.mjs ===
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { outputPaths } from '../config.mjs';
+import { createFileStructureFile } from './treePrinter.mjs';
+import { printDirectoryContent } from './contentPrinter.mjs';
+import { projectRootPath } from '../config.mjs';
+
+// Helper function to determine snapshot type
+function getSnapshotType(path) {
+    const segments = path.split('/');
+    const currentDir = segments.filter(Boolean).pop();
+    
+    if (segments.filter(Boolean).length <= 1) {
+        return 'Full Project';
+    }
+    return `Partial Project (${currentDir} directory)`;
+}
+
+// Helper function to get context description
+function getContextDescription(path) {
+    const segments = path.split('/');
+    const currentDir = segments.filter(Boolean).pop();
+    
+    if (segments.filter(Boolean).length <= 1) {
+        return 'the complete project structure';
+    }
+    return `only the ${currentDir} directory and its contents`;
+}
+
+// Function to find and parse README.md from project root
+function findAndParseReadme(startPath) {
+    const readmePath = join(startPath, 'README.md');
+    console.log('\n🔍 Looking for README at:', readmePath);
+    
+    if (existsSync(readmePath)) {
+        try {
+            const content = readFileSync(readmePath, 'utf8');
+            console.log('📖 Successfully read README.md');
+            const lines = content.split('\n');
+            
+            let hashA = '';
+            let contentA = '';
+            let hashB = '';
+            let contentB = '';
+            let hashC = '';
+            let contentC = '';
+            let hashD = '';
+            
+            let currentContent = '';
+            let hashCount = 0;
+            let isCollectingContentC = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                // Check for # or ## (but not ###)
+                if (line.match(/^#{1,2}\s/) && !line.match(/^#{3,}\s/)) {
+                    hashCount++;
+                    
+                    if (hashCount === 1) {
+                        hashA = line;
+                    } else if (hashCount === 2) {
+                        contentA = currentContent.trim();
+                        hashB = line;
+                    } else if (hashCount === 3) {
+                        contentB = currentContent.trim();
+                        hashC = line;
+                        isCollectingContentC = true;
+                    } else if (hashCount === 4) {
+                        hashD = line;
+                        contentC = currentContent.trim();
+                        break;
+                    }
+                    currentContent = '';
+                } else {
+                    currentContent += line + '\n';
+                }
+            }
+            
+            // Handle case where we don't hit a fourth heading
+            if (hashCount === 1) {
+                contentA = currentContent.trim();
+            } else if (hashCount === 2) {
+                contentB = currentContent.trim();
+            } else if (hashCount === 3) {
+                contentC = currentContent.trim();
+            }
+            
+            const result = {
+                hashA: hashA.replace(/^#+\s+/, '').trim(),
+                contentA: contentA,
+                hashB: hashB.replace(/^#+\s+/, '').trim(),
+                contentB: contentB,
+                hashC: hashC.replace(/^#+\s+/, '').trim(),
+                contentC: contentC
+            };
+            
+            console.log('\n📝 Parsed sections:', {
+                hashA: result.hashA,
+                hashB: result.hashB,
+                hashC: result.hashC,
+                hashD: hashD.replace(/^#+\s+/, '').trim()
+            });
+            
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error parsing README:', error);
+            return null;
+        }
+    }
+    console.log('❌ README.md not found');
+    return null;
+}
+
+// Function to find the nearest package.json
+function findNearestPackageJson(startPath) {
+    console.log('\n🔍 Starting package.json search from:', startPath);
+    let currentPath = startPath;
+    
+    while (currentPath !== '/') {
+        const packagePath = join(currentPath, 'package.json');
+        console.log('Checking for package.json at:', packagePath);
+        
+        if (existsSync(packagePath)) {
+            console.log('✅ Found package.json at:', packagePath);
+            try {
+                const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+                console.log('📦 Successfully parsed package.json');
+                const technologies = {
+                    dependencies: packageJson.dependencies || {},
+                    devDependencies: packageJson.devDependencies || {},
+                    path: packagePath
+                };
+                return technologies;
+            } catch (error) {
+                console.error('❌ Error parsing package.json:', error);
+                console.error('At path:', packagePath);
+                return null;
+            }
+        }
+        
+        const previousPath = currentPath;
+        currentPath = dirname(currentPath);
+        console.log('⬆️  Moving up to parent directory:', currentPath);
+        
+        // Prevent infinite loop
+        if (currentPath === previousPath) {
+            console.log('🛑 Reached root directory, stopping search');
+            break;
+        }
+    }
+    
+    console.log('❌ No package.json found in project hierarchy');
+    return null;
+}
+
+// Function to format technologies
+function formatTechnologies(technologies) {
+    if (!technologies) return 'No package.json found in project hierarchy';
+    
+    const { dependencies, devDependencies, path } = technologies;
+    let output = '';
+    
+    output += '=================================\n';
+    output += '      PROJECT TECHNOLOGIES\n';
+    output += '=================================\n';
+    output += `Located package.json: ${path}\n\n`;
+
+    if (Object.keys(dependencies).length > 0) {
+        output += '📦 Main Dependencies\n';
+        output += '-------------------\n';
+        Object.entries(dependencies)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([name, version]) => {
+                output += `• ${name.padEnd(20)} ${version}\n`;
+            });
+    }
+    
+    if (Object.keys(devDependencies).length > 0) {
+        output += '\n🛠️  Dev Dependencies\n';
+        output += '-------------------\n';
+        Object.entries(devDependencies)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([name, version]) => {
+                output += `• ${name.padEnd(20)} ${version}\n`;
+            });
+    }
+    
+    return output + '\n';
+}
+
+async function generateprojectSnapshot() {
+    console.log('\n🚀 Starting combined tree and content generation...\n');
+
+    // Step 1: Generate tree structure
+    console.log('📁 Generating tree structure...');
+    createFileStructureFile(projectRootPath);
+
+    // Step 2: Generate content
+    console.log('\n📄 Generating content...');
+    const success = printDirectoryContent(projectRootPath);
+
+    // Step 3: Combine the files
+    console.log('\n🔄 Combining files...');
+    try {
+        const treeContent = readFileSync(outputPaths.tree, 'utf8');
+        console.log('Successfully read tree content');
+        const fileContent = readFileSync(outputPaths.content, 'utf8');
+        console.log('Successfully read file content');
+        const technologies = findNearestPackageJson(projectRootPath);
+        console.log('Successfully found nearest package.json');
+        const readmeInfo = findAndParseReadme(projectRootPath);
+        console.log('Successfully parsed README.md');
+        
+        const combinedContent = `# Project Snapshot of ${readmeInfo?.hashA || 'Unknown Project'}
+
+${readmeInfo?.contentA || ''}
+
+## ${readmeInfo?.hashB || 'Description'}
+${readmeInfo?.contentB || 'No description available'}
+
+## ${readmeInfo?.hashC || 'Features'}
+${readmeInfo?.contentC || 'No features listed'}
+
+This is an automated project snapshot generated for AI assistance.
+
+## Project Context
+- Full Path: ${projectRootPath}
+- Type: ${getSnapshotType(projectRootPath)}
+- Generated: ${new Date().toLocaleString()}
+
+## Important Notes
+- This snapshot shows ${getContextDescription(projectRootPath)}
+- Files over 2000 lines are truncated
+- Binary files and dependencies are excluded
+
+${formatTechnologies(technologies)}
+=================================
+           FILE TREE
+=================================
+Directory structure for: ${projectRootPath}
+
+${treeContent}
+
+=================================
+         FILE CONTENTS
+=================================
+File contents for: ${projectRootPath}
+Each file is preceded by its full path.
+
+${fileContent}
+
+=================================
+       ADDITIONAL NOTES
+=================================
+- Generated using repository-content-printer
+- Node modules and build outputs excluded
+- See config.mjs for complete ignore list
+`;
+
+        writeFileSync(outputPaths.combined, combinedContent);
+        
+        console.log('\n✨ Combined file generated successfully!');
+        console.log(`📝 Results saved to: ${outputPaths.combined}\n`);
+    } catch (error) {
+        console.error('❌ Error combining files:', error);
+    }
+}
+
+// Run the combined generation
+generateprojectSnapshot(); 
+
+
+=== File: repo-scanners/treePrinter.mjs ===
+import { readdirSync, statSync, writeFileSync } from 'fs';
+import { join, basename } from 'path';
+import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
+
+export function shouldSkipRecursion(path) {
+    const dirName = basename(path);
+    return ignorePatterns.some(pattern => 
+        dirName === pattern || 
+        path.includes(`/${pattern}/`)
+    );
+}
+
+// Function to get the file structure recursively
+export function gettreeStructure(dir, level = 0) {
+    let structure = '';
+    
+    // Get all files and directories within the directory
+    const items = readdirSync(dir);
+    
+    // Separate and sort directories and files
+    const directories = items
+        .filter(item => statSync(join(dir, item)).isDirectory())
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    const files = items
+        .filter(item => statSync(join(dir, item)).isFile())
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    // Process directories first
+    directories.forEach((item, index) => {
+        const fullPath = join(dir, item);
+        const isLast = index === directories.length - 1 && files.length === 0;
+        
+        // Add directory to structure
+        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}/\n`;
+        
+        if (!shouldSkipRecursion(fullPath)) {
+            structure += gettreeStructure(fullPath, level + 1);
+        }
+    });
+    
+    // Then process files
+    files.forEach((item, index) => {
+        const isLast = index === files.length - 1;
+        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}\n`;
+    });
+    
+    return structure;
+}
+
+// Function to create the treeStructure.txt
+export function createFileStructureFile(rootDir) {
+    // Initialize/clear the tree file
+    writeFileSync(outputPaths.tree, '');
+    
+    const structure = `## Project Structure
+
+\`\`\`
+${basename(rootDir)}/\n${gettreeStructure(rootDir)}
+\`\`\``;
+    
+    // Write to file using the configured path
+    writeFileSync(outputPaths.tree, structure, 'utf-8');
+    console.log(structure);
+    console.log(`Tree structure saved to: ${outputPaths.tree}`);
+}
+
+// Optional: Move this to a separate file
+const projectRoot = projectRootPath;
+createFileStructureFile(projectRoot);
+
+
+
+
+=== File: README.md ===
+# Repository Content Tools
+
+A collection of Node.js utilities for generating comprehensive project documentation and snapshots. This toolkit includes three main components: Content Printer, Tree Printer, and Project Snapshot Generator.
+
+## Description
+This project provides a suite of tools for developers to generate detailed documentation and snapshots of their repositories. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits.
+
+## Features
+
+### Content Printer (contentPrinter.mjs)
+- 📄 Creates a consolidated file containing all project content
+- Enforces a 2000-line limit on output
+- 🚫 Skips binary files and common development artifacts
+- ✨ Provides real-time processing feedback
+
+### Tree Printer (treePrinter.mjs)
+- 🌳 Generates visual directory structure trees
+- 📁 Shows hierarchical file organization
+- 🔍 Supports custom ignore patterns
+- 🎯 Creates clean, formatted output
+
+### Project Snapshot Generator (projectSnapshotPrinter.mjs)
+- 📸 Creates comprehensive project snapshots
+- 📝 Extracts project documentation from README
+- 🛠️ Lists project dependencies and technologies
+- 🔄 Combines tree structure and content into one view
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/mollybeach/repository-content-tools.git
+cd repository-content-tools
+```
+
+## Usage
+
+### Content Printer
+```bash
+node repo-scanners/contentPrinter.mjs
+```
+
+### Tree Printer
+```bash
+node repo-scanners/treePrinter.mjs
+```
+
+### Project Snapshot
+```bash
+node repo-scanners/projectSnapshotPrinter.mjs
+```
+
+## Configuration
+
+Modify `config.mjs` to customize:
+- Project root path
+- Output file locations
+- Ignore patterns
+- Line limits
+
+## Output Files
+
+The tools generate three main output files in the `output` directory:
+- `contentPrinted.txt`: Full content of all processed files
+- `treePrinted.txt`: Visual directory structure
+- `projectSnapshotPrinted.txt`: Combined project snapshot
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
+
+## License
+
+MIT
+
+## Author
+
+@mollybeach
+
+## Project Structure
+
+```
+./
+├── .git/
+├── output/
+│   ├── contentPrinted.txt
+│   ├── projectSnapshotPrinted.txt
+│   └── treePrinted.txt
+├── repo-scanners/
+│   ├── contentPrinter.mjs
+│   ├── projectSnapshotPrinter.mjs
+│   └── treePrinter.mjs
+├── .DS_Store
+├── config.mjs
+└── README.md
+
+```
+
+
+=== File: config.mjs ===
+import { join } from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// Edit this path to the root of the project you want to scan
+export const projectRootPath = './'//'../token-gating-discord-bot-api/client';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export const outputPaths = {
+    content: join(__dirname, 'output', 'contentPrinted.txt'),
+    tree: join(__dirname, 'output', 'treePrinted.txt'),
+    combined: join(__dirname, 'output', 'projectSnapshotPrinted.txt')
+};
+
+// Ignore Patterns
+export const ignorePatterns = [
+    // Dependencies
+    'node_modules', 'bower_components', 'jspm_packages', 'package-lock.json', 'yarn.lock',
+    // Build outputs
+    'dist', 'build', 'out', '.min.js', '.min.css',
+    // Environment and secrets
+    '.env', '.pem', '.secret',
+    // IDE and Editor files
+    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath', 
+    '.sublime-workspace', '.sublime-project',
+    // Logs
+    'logs', '.log', 'npm-debug.log', 'yarn-debug.log', 'yarn-error.log',
+    // Testing and Coverage
+    'coverage', '.nyc_output', '.jest', '__tests__',
+    // Temp files
+    'tmp', 'temp', '.temp', '.tmp',
+    // Compiled files
+    '.com', '.class', '.dll', '.exe', '.o', '.so',
+    // Package files
+    '.7z', '.dmg', '.gz', '.iso', '.jar', '.rar', '.tar', '.zip',
+    // Database
+    '.sqlite', '.db',
+    // Mobile
+    '.gradle', 'local.properties', '.apk', '.aab', '.ipa',
+    // Python
+    '__pycache, __pycache__', '.py[cod]', '.Python', 'env', 'venv', 'pip-log.txt',
+    // Ruby
+    '.gem', '.bundle', 'vendor',
+    // OS specific
+    '.DS_Store', '.AppleDouble', '.LSOverride', 'Icon', '._',
+    'Thumbs.db', 'ehthumbs.db', 'Desktop.ini',
+    // Git files
+    '.git',
+    '.gitignore',
+    '.gitattributes',
+    '.gitmodules',
+    '.github',
+    '.gitlab',
+    '.gitkeep',
+
+    // Package managers and dependencies
+    'node_modules',
+    'bower_components',
+    'jspm_packages',
+    'package-lock.json',
+    'yarn.lock',
+    'vendor',
+
+    // Build and output directories
+    'dist',
+    'build',
+    'out',
+    '.min.js',
+    '.min.css',
+
+    // Deployment directories
+    'deployment',
+    '.deploy',
+    '.kubernetes',
+    '.k8s',
+    'helm',
+    'terraform',
+    '.terraform',
+
+    // Environment and configuration
+    '.env',
+    '.pem',
+    '.secret',
+
+    // IDE and editor files
+    '.idea',
+    '.vscode',
+    '.swp',
+    '.swo',
+    '.DS_Store',
+    'Thumbs.db',
+
+    // Logs and coverage
+    'logs',
+    '.log',
+    'coverage',
+    '.nyc_output',
+
+    // Temporary files
+    'tmp',
+    'temp',
+    '.temp',
+    '.tmp',
+
+    // Python specific
+    'python3.9',
+    'site-packages',
+    'env',
+    '__pycache__',
+    'lib',
+    'include',
+    'bin',
+    'migrations',
+    'python3',
+
+    // Localization and static
+    'LC_MESSAGES',
+    'locale',
+    'static',
+
+    // Package files
+    'package.json', 
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
+
+    // License
+    'LICENSE.txt',
+    'LICENSE',
+    'LICENSE.md',
+    'LICENSE.markdown',
+
+    // Readme
+    /*
+    'README.md',
+    'README.txt',
+    'README',*/
+
+    // Procfile
+    'Procfile',
+
+    // Latest dump
+    'latest.dump',
+    '.dump',
+
+    // Runtime
+    'runtime.txt',
+
+    // Txt
+    '.txt',
+    
+    'i18n/',
+];
+
+
+
+=== Directory: repo-scanners ===
+
+
+=== File: repo-scanners/contentPrinter.mjs ===
+import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
+import { join } from 'path';
+import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
+
+console.log(outputPaths.content);
+
+export function shouldIgnore(path) {
+    const normalizedPath = path.toLowerCase();
+    
+    // Check if the path contains any of the ignore patterns
+    return ignorePatterns.some(pattern => {
+        // Check if pattern is in the path
+        if (normalizedPath.includes(pattern.toLowerCase())) {
+            return true;
+        }
+        
+        // Check for file extensions
+        if (pattern.startsWith('.') && normalizedPath.endsWith(pattern.toLowerCase())) {
+            return true;
+        }
+        
+        return false;
+    });
+}
+
+export function checkLineCount(filePath) {
+    try {
+        const content = readFileSync(filePath, 'utf8');
+        return content.split('\n').length;
+    } catch (error) {
+        console.error(`Error checking line count: ${error.message}`);
+        return 0;
+    }
+}
+
+export function appendToFile(contentPrintedPath, newContent) {
+    try {
+        // Check current line count
+        const currentLines = checkLineCount(contentPrintedPath);
+        const newLines = newContent.split('\n').length;
+        
+        // If adding this content would exceed 2000 lines, return false
+        if (currentLines + newLines > 2000) {
+            console.log('\n📊 Reached 2000 lines limit!');
+            console.log(`✨ Processing complete with ${currentLines} lines`);
+            console.log('📝 Results saved to: content.txt\n');
+            return false;
+        }
+        
+        // Otherwise, append the content and return true
+        writeFileSync(contentPrintedPath, newContent, { flag: 'a' });
+        return true;
+    } catch (error) {
+        console.error(`Error appending to file: ${error.message}`);
+        return false;
+    }
+}
+
+export function printDirectoryContent(directoryPath, level = 0) {
+    try {
+        if (checkLineCount(outputPaths.content) >= 2000) {
+            console.log('\n📊 Already at 2000 lines limit!');
+            console.log('✨ Processing complete');
+            console.log(`📝 Results saved to: ${outputPaths.content}\n`);
+            return false;
+        }
+
+        // Check if the directory itself should be ignored
+        if (shouldIgnore(directoryPath)) {
+            console.log(`Skipping ignored directory: ${directoryPath}`);
+            return true;
+        }
+
+        const files = readdirSync(directoryPath);
+        
+        // Process files first
+        for (const file of files) {
+            const filePath = join(directoryPath, file);
+            
+            // Skip if file should be ignored
+            if (shouldIgnore(filePath)) {
+                console.log(`Skipping ignored file: ${filePath}`);
+                continue;
+            }
+
+            const stats = statSync(filePath);
+            
+            if (stats.isFile()) {
+                const header = `\n\n=== File: ${filePath} ===\n`;
+                if (!appendToFile(outputPaths.content, header)) {
+                    return false;
+                }
+                
+                try {
+                    const fileContent = readFileSync(filePath, 'utf8');
+                    if (!appendToFile(outputPaths.content, fileContent + '\n')) {
+                        return false;
+                    }
+                    console.log(`✅ Successfully added: ${filePath}`);
+                } catch (error) {
+                    const errorMsg = `Error reading file: ${error.message}\n`;
+                    if (!appendToFile(outputPaths.content, errorMsg)) {
+                        return false;
+                    }
+                    console.error(`❌ Error processing: ${filePath}`);
+                }
+            }
+        }
+
+        // Then process directories
+        for (const file of files) {
+            const filePath = join(directoryPath, file);
+            
+            // Skip if directory should be ignored
+            if (shouldIgnore(filePath)) {
+                console.log(`Skipping ignored directory: ${filePath}`);
+                continue;
+            }
+
+            const stats = statSync(filePath);
+            
+            if (stats.isDirectory()) {
+                const header = `\n\n=== Directory: ${filePath} ===\n`;
+                if (!appendToFile(outputPaths.content, header)) {
+                    return false;
+                }
+                
+                if (!printDirectoryContent(filePath, level + 1)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error(`Error processing directory ${directoryPath}: ${error.message}`);
+        return false;
+    }
+}
+
+// Clear the content.txt file before starting
+console.log(outputPaths.content);
+writeFileSync(outputPaths.content, '');
+
+const projectRoot = projectRootPath;
+// Start processing and handle completion
+console.log('\n🚀 Starting file processing...\n');
+
+const success = printDirectoryContent(projectRoot);
+
+if (success) {
+    const finalLineCount = checkLineCount(outputPaths.content);
+    console.log('\n✨ Processing complete!');
+    console.log(`📊 Total lines processed: ${finalLineCount}`);
+    console.log('📝 Results saved to: content.txt\n');
+} else {
+    const finalLineCount = checkLineCount(outputPaths.content);
+    if (finalLineCount >= 2000) {
+        // Don't need to print anything here as the message is already shown
+    } else {
+        console.log(`✨ Processing complete with ${finalLineCount} lines`);
+        console.log('📝 Results saved to: content.txt\n');
+    }
+}
+
+
+=== File: repo-scanners/projectSnapshotPrinter.mjs ===
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { outputPaths } from '../config.mjs';
+import { createFileStructureFile } from './treePrinter.mjs';
+import { printDirectoryContent } from './contentPrinter.mjs';
+import { projectRootPath } from '../config.mjs';
+
+// Helper function to determine snapshot type
+function getSnapshotType(path) {
+    const segments = path.split('/');
+    const currentDir = segments.filter(Boolean).pop();
+    
+    if (segments.filter(Boolean).length <= 1) {
+        return 'Full Project';
+    }
+    return `Partial Project (${currentDir} directory)`;
+}
+
+// Helper function to get context description
+function getContextDescription(path) {
+    const segments = path.split('/');
+    const currentDir = segments.filter(Boolean).pop();
+    
+    if (segments.filter(Boolean).length <= 1) {
+        return 'the complete project structure';
+    }
+    return `only the ${currentDir} directory and its contents`;
+}
+
+// Function to find and parse README.md from project root
+function findAndParseReadme(startPath) {
+    const readmePath = join(startPath, 'README.md');
+    console.log('\n🔍 Looking for README at:', readmePath);
+    
+    if (existsSync(readmePath)) {
+        try {
+            const content = readFileSync(readmePath, 'utf8');
+            console.log('📖 Successfully read README.md');
+            const lines = content.split('\n');
+            
+            let hashA = '';
+            let contentA = '';
+            let hashB = '';
+            let contentB = '';
+            let hashC = '';
+            let contentC = '';
+            let hashD = '';
+            
+            let currentContent = '';
+            let hashCount = 0;
+            let isCollectingContentC = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                // Check for # or ## (but not ###)
+                if (line.match(/^#{1,2}\s/) && !line.match(/^#{3,}\s/)) {
+                    hashCount++;
+                    
+                    if (hashCount === 1) {
+                        hashA = line;
+                    } else if (hashCount === 2) {
+                        contentA = currentContent.trim();
+                        hashB = line;
+                    } else if (hashCount === 3) {
+                        contentB = currentContent.trim();
+                        hashC = line;
+                        isCollectingContentC = true;
+                    } else if (hashCount === 4) {
+                        hashD = line;
+                        contentC = currentContent.trim();
+                        break;
+                    }
+                    currentContent = '';
+                } else {
+                    currentContent += line + '\n';
+                }
+            }
+            
+            // Handle case where we don't hit a fourth heading
+            if (hashCount === 1) {
+                contentA = currentContent.trim();
+            } else if (hashCount === 2) {
+                contentB = currentContent.trim();
+            } else if (hashCount === 3) {
+                contentC = currentContent.trim();
+            }
+            
+            const result = {
+                hashA: hashA.replace(/^#+\s+/, '').trim(),
+                contentA: contentA,
+                hashB: hashB.replace(/^#+\s+/, '').trim(),
+                contentB: contentB,
+                hashC: hashC.replace(/^#+\s+/, '').trim(),
+                contentC: contentC
+            };
+            
+            console.log('\n📝 Parsed sections:', {
+                hashA: result.hashA,
+                hashB: result.hashB,
+                hashC: result.hashC,
+                hashD: hashD.replace(/^#+\s+/, '').trim()
+            });
+            
+            return result;
+            
+        } catch (error) {
+            console.error('❌ Error parsing README:', error);
+            return null;
+        }
+    }
+    console.log('❌ README.md not found');
+    return null;
+}
+
+// Function to find the nearest package.json
+function findNearestPackageJson(startPath) {
+    console.log('\n🔍 Starting package.json search from:', startPath);
+    let currentPath = startPath;
+    
+    while (currentPath !== '/') {
+        const packagePath = join(currentPath, 'package.json');
+        console.log('Checking for package.json at:', packagePath);
+        
+        if (existsSync(packagePath)) {
+            console.log('✅ Found package.json at:', packagePath);
+            try {
+                const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+                console.log('📦 Successfully parsed package.json');
+                const technologies = {
+                    dependencies: packageJson.dependencies || {},
+                    devDependencies: packageJson.devDependencies || {},
+                    path: packagePath
+                };
+                return technologies;
+            } catch (error) {
+                console.error('❌ Error parsing package.json:', error);
+                console.error('At path:', packagePath);
+                return null;
+            }
+        }
+        
+        const previousPath = currentPath;
+        currentPath = dirname(currentPath);
+        console.log('⬆️  Moving up to parent directory:', currentPath);
+        
+        // Prevent infinite loop
+        if (currentPath === previousPath) {
+            console.log('🛑 Reached root directory, stopping search');
+            break;
+        }
+    }
+    
+    console.log('❌ No package.json found in project hierarchy');
+    return null;
+}
+
+// Function to format technologies
+function formatTechnologies(technologies) {
+    if (!technologies) return 'No package.json found in project hierarchy';
+    
+    const { dependencies, devDependencies, path } = technologies;
+    let output = '';
+    
+    output += '=================================\n';
+    output += '      PROJECT TECHNOLOGIES\n';
+    output += '=================================\n';
+    output += `Located package.json: ${path}\n\n`;
+
+    if (Object.keys(dependencies).length > 0) {
+        output += '📦 Main Dependencies\n';
+        output += '-------------------\n';
+        Object.entries(dependencies)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([name, version]) => {
+                output += `• ${name.padEnd(20)} ${version}\n`;
+            });
+    }
+    
+    if (Object.keys(devDependencies).length > 0) {
+        output += '\n🛠️  Dev Dependencies\n';
+        output += '-------------------\n';
+        Object.entries(devDependencies)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .forEach(([name, version]) => {
+                output += `• ${name.padEnd(20)} ${version}\n`;
+            });
+    }
+    
+    return output + '\n';
+}
+
+async function generateprojectSnapshot() {
+    console.log('\n🚀 Starting combined tree and content generation...\n');
+
+    // Step 1: Generate tree structure
+    console.log('📁 Generating tree structure...');
+    createFileStructureFile(projectRootPath);
+
+    // Step 2: Generate content
+    console.log('\n📄 Generating content...');
+    const success = printDirectoryContent(projectRootPath);
+
+    // Step 3: Combine the files
+    console.log('\n🔄 Combining files...');
+    try {
+        const treeContent = readFileSync(outputPaths.tree, 'utf8');
+        console.log('Successfully read tree content');
+        const fileContent = readFileSync(outputPaths.content, 'utf8');
+        console.log('Successfully read file content');
+        const technologies = findNearestPackageJson(projectRootPath);
+        console.log('Successfully found nearest package.json');
+        const readmeInfo = findAndParseReadme(projectRootPath);
+        console.log('Successfully parsed README.md');
+        
+        const combinedContent = `# Project Snapshot of ${readmeInfo?.hashA || 'Unknown Project'}
+
+${readmeInfo?.contentA || ''}
+
+## ${readmeInfo?.hashB || 'Description'}
+${readmeInfo?.contentB || 'No description available'}
+
+## ${readmeInfo?.hashC || 'Features'}
+${readmeInfo?.contentC || 'No features listed'}
+
+This is an automated project snapshot generated for AI assistance.
+
+## Project Context
+- Full Path: ${projectRootPath}
+- Type: ${getSnapshotType(projectRootPath)}
+- Generated: ${new Date().toLocaleString()}
+
+## Important Notes
+- This snapshot shows ${getContextDescription(projectRootPath)}
+- Files over 2000 lines are truncated
+- Binary files and dependencies are excluded
+
+${formatTechnologies(technologies)}
+=================================
+           FILE TREE
+=================================
+Directory structure for: ${projectRootPath}
+
+${treeContent}
+
+=================================
+         FILE CONTENTS
+=================================
+File contents for: ${projectRootPath}
+Each file is preceded by its full path.
+
+${fileContent}
+
+=================================
+       ADDITIONAL NOTES
+=================================
+- Generated using repository-content-printer
+- Node modules and build outputs excluded
+- See config.mjs for complete ignore list
+`;
+
+        writeFileSync(outputPaths.combined, combinedContent);
+        
+        console.log('\n✨ Combined file generated successfully!');
+        console.log(`📝 Results saved to: ${outputPaths.combined}\n`);
+    } catch (error) {
+        console.error('❌ Error combining files:', error);
+    }
+}
+
+// Run the combined generation
+generateprojectSnapshot(); 
+
+
+=== File: repo-scanners/treePrinter.mjs ===
+import { readdirSync, statSync, writeFileSync } from 'fs';
+import { join, basename } from 'path';
+import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
+
+export function shouldSkipRecursion(path) {
+    const dirName = basename(path);
+    return ignorePatterns.some(pattern => 
+        dirName === pattern || 
+        path.includes(`/${pattern}/`)
+    );
+}
+
+// Function to get the file structure recursively
+export function gettreeStructure(dir, level = 0) {
+    let structure = '';
+    
+    // Get all files and directories within the directory
+    const items = readdirSync(dir);
+    
+    // Separate and sort directories and files
+    const directories = items
+        .filter(item => statSync(join(dir, item)).isDirectory())
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    const files = items
+        .filter(item => statSync(join(dir, item)).isFile())
+        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    // Process directories first
+    directories.forEach((item, index) => {
+        const fullPath = join(dir, item);
+        const isLast = index === directories.length - 1 && files.length === 0;
+        
+        // Add directory to structure
+        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}/\n`;
+        
+        if (!shouldSkipRecursion(fullPath)) {
+            structure += gettreeStructure(fullPath, level + 1);
+        }
+    });
+    
+    // Then process files
+    files.forEach((item, index) => {
+        const isLast = index === files.length - 1;
+        structure += `${'│   '.repeat(level)}${isLast ? '└── ' : '├── '}${item}\n`;
+    });
+    
+    return structure;
+}
+
+// Function to create the treeStructure.txt
+export function createFileStructureFile(rootDir) {
+    // Initialize/clear the tree file
+    writeFileSync(outputPaths.tree, '');
+    
+    const structure = `## Project Structure
+
+\`\`\`
+${basename(rootDir)}/\n${gettreeStructure(rootDir)}
+\`\`\``;
+    
+    // Write to file using the configured path
+    writeFileSync(outputPaths.tree, structure, 'utf-8');
+    console.log(structure);
+    console.log(`Tree structure saved to: ${outputPaths.tree}`);
+}
+
+// Optional: Move this to a separate file
+const projectRoot = projectRootPath;
+createFileStructureFile(projectRoot);
+
+
+
+
+=================================
+       ADDITIONAL NOTES
+=================================
+- Generated using repository-content-printer
+- Node modules and build outputs excluded
+- See config.mjs for complete ignore list

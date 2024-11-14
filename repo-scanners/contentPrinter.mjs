@@ -1,10 +1,10 @@
 import { readdirSync, statSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { projectRootPath } from './config.mjs';
-const contentFilePath = './content.txt'
-import { ignorePatterns } from './ignorePatterns.mjs';
+import { projectRootPath, ignorePatterns, outputPaths } from '../config.mjs';
 
-function shouldIgnore(path) {
+console.log(outputPaths.content);
+
+export function shouldIgnore(path) {
     const normalizedPath = path.toLowerCase();
     
     // Check if the path contains any of the ignore patterns
@@ -23,7 +23,7 @@ function shouldIgnore(path) {
     });
 }
 
-function checkLineCount(filePath) {
+export function checkLineCount(filePath) {
     try {
         const content = readFileSync(filePath, 'utf8');
         return content.split('\n').length;
@@ -33,10 +33,10 @@ function checkLineCount(filePath) {
     }
 }
 
-function appendToFile(contentFilePath, newContent) {
+export function appendToFile(contentPrintedPath, newContent) {
     try {
         // Check current line count
-        const currentLines = checkLineCount(contentFilePath);
+        const currentLines = checkLineCount(contentPrintedPath);
         const newLines = newContent.split('\n').length;
         
         // If adding this content would exceed 2000 lines, return false
@@ -48,7 +48,7 @@ function appendToFile(contentFilePath, newContent) {
         }
         
         // Otherwise, append the content and return true
-        writeFileSync(contentFilePath, newContent, { flag: 'a' });
+        writeFileSync(contentPrintedPath, newContent, { flag: 'a' });
         return true;
     } catch (error) {
         console.error(`Error appending to file: ${error.message}`);
@@ -56,12 +56,12 @@ function appendToFile(contentFilePath, newContent) {
     }
 }
 
-function printDirectoryContent(directoryPath, contentFilePath, level = 0) {
+export function printDirectoryContent(directoryPath, level = 0) {
     try {
-        if (checkLineCount(contentFilePath) >= 2000) {
+        if (checkLineCount(outputPaths.content) >= 2000) {
             console.log('\n📊 Already at 2000 lines limit!');
             console.log('✨ Processing complete');
-            console.log('📝 Results saved to: content.txt\n');
+            console.log(`📝 Results saved to: ${outputPaths.content}\n`);
             return false;
         }
 
@@ -87,19 +87,19 @@ function printDirectoryContent(directoryPath, contentFilePath, level = 0) {
             
             if (stats.isFile()) {
                 const header = `\n\n=== File: ${filePath} ===\n`;
-                if (!appendToFile(contentFilePath, header)) {
+                if (!appendToFile(outputPaths.content, header)) {
                     return false;
                 }
                 
                 try {
                     const fileContent = readFileSync(filePath, 'utf8');
-                    if (!appendToFile(contentFilePath, fileContent + '\n')) {
+                    if (!appendToFile(outputPaths.content, fileContent + '\n')) {
                         return false;
                     }
                     console.log(`✅ Successfully added: ${filePath}`);
                 } catch (error) {
                     const errorMsg = `Error reading file: ${error.message}\n`;
-                    if (!appendToFile(contentFilePath, errorMsg)) {
+                    if (!appendToFile(outputPaths.content, errorMsg)) {
                         return false;
                     }
                     console.error(`❌ Error processing: ${filePath}`);
@@ -121,11 +121,11 @@ function printDirectoryContent(directoryPath, contentFilePath, level = 0) {
             
             if (stats.isDirectory()) {
                 const header = `\n\n=== Directory: ${filePath} ===\n`;
-                if (!appendToFile(contentFilePath, header)) {
+                if (!appendToFile(outputPaths.content, header)) {
                     return false;
                 }
                 
-                if (!printDirectoryContent(filePath, contentFilePath, level + 1)) {
+                if (!printDirectoryContent(filePath, level + 1)) {
                     return false;
                 }
             }
@@ -139,21 +139,22 @@ function printDirectoryContent(directoryPath, contentFilePath, level = 0) {
 }
 
 // Clear the content.txt file before starting
-writeFileSync(contentFilePath, '');
+console.log(outputPaths.content);
+writeFileSync(outputPaths.content, '');
 
 const projectRoot = projectRootPath;
 // Start processing and handle completion
 console.log('\n🚀 Starting file processing...\n');
 
-const success = printDirectoryContent(projectRoot, contentFilePath);
+const success = printDirectoryContent(projectRoot);
 
 if (success) {
-    const finalLineCount = checkLineCount(contentFilePath);
+    const finalLineCount = checkLineCount(outputPaths.content);
     console.log('\n✨ Processing complete!');
     console.log(`📊 Total lines processed: ${finalLineCount}`);
     console.log('📝 Results saved to: content.txt\n');
 } else {
-    const finalLineCount = checkLineCount(contentFilePath);
+    const finalLineCount = checkLineCount(outputPaths.content);
     if (finalLineCount >= 2000) {
         // Don't need to print anything here as the message is already shown
     } else {

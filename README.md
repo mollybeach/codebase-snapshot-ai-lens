@@ -1,90 +1,59 @@
-# Repository Content Printer
+# Project Snapshot Printer
 
-A Node.js utility that recursively traverses directories and creates a single content.txt file containing the contents of all relevant files, while respecting common gitignore patterns and maintaining a 2000-line limit.
+A Node.js utility for generating comprehensive project documentation snapshots. This tool analyzes repository content, creates file listings, and generates detailed project snapshots while respecting common gitignore patterns.
+
+## Description
+This project provides a powerful tool for developers to generate detailed documentation snapshots of their repositories. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits.
 
 ## Features
 
-- 📁 Recursively processes directories and files
-- 🚫 Automatically skips common development artifacts (similar to .gitignore)
-- ⚡ Processes upper-level files before diving into subdirectories
+### Content Analysis
+- 📄 Creates a consolidated file containing all project content
 - 📊 Enforces a 2000-line limit on output
-- 💡 Smart file filtering (ignores binaries, logs, temp files, etc.)
-- 📝 Creates a single consolidated output file
-- ✨ Progress indicators and completion status
+- 🚫 Skips binary files and common development artifacts
+- ✨ Provides real-time processing feedback
+
+### Directory Structure
+- 🌳 Generates visual directory structure trees
+- 📁 Shows hierarchical file organization
+- 🔍 Supports custom ignore patterns
+- 🎯 Creates clean, formatted output
+
+### Project Documentation
+- 📸 Creates comprehensive project snapshots
+- 📝 Extracts project documentation from README
+- 🛠️ Lists project dependencies and technologies
+- 🔄 Combines tree structure and content into one view
 
 ## Installation
 
 1. Clone the repository:
-
-```
-git clone https://github.com/mollybeach/repositoryContentPrinter.git
-cd repositoryContentPrinter
+```bash
+git clone https://github.com/mollybeach/project-snapshot-printer.git
+cd project-snapshot-printer
 ```
 
 ## Usage
 
-1. Modify the `projectRootPath` variable in `config.mjs` to point to your target directory:
-
-```
-const projectRoot = '../yourRepositoryName';
-```
-
-2. Run the script:
-
-```
-node repositoryContentPrinter.mjs
+Generate a complete project snapshot:
+```bash
+node repo-scanners/projectSnapshotPrinter.mjs
 ```
 
-3. Check the generated `content.txt` file in the same directory as the script.
+## Configuration
 
-## Output Format
+Modify `config.mjs` to customize:
+- Project root path
+- Output file locations
+- Ignore patterns
+- Line limits
 
-The generated content.txt file follows this structure:
+## Output Files
 
-```
-ext
-=== File: /path/to/file1.ext ===
-[content of file1]
-=== Directory: /path/to/directory ===
-=== File: /path/to/directory/file2.ext ===
-[content of file2]
-```
-
-## Ignored Patterns
-
-The script automatically ignores common development files and directories, including:
-- Dependencies (node_modules, bower_components, etc.)
-- Build outputs (dist, build, etc.)
-- Environment files (.env, .secret, etc.)
-- IDE files (.vscode, .idea, etc.)
-- Logs and temporary files
-- Compiled binaries
-- Package files
-- Database files
-- And more...
-
-## Console Output
-
-The script provides real-time feedback:
-- 🚀 Start of processing
-- ✅ Successfully processed files
-- ❌ Error notifications
-- 📊 Line count updates
-- ✨ Completion status
-
-## Limitations
-
-- Maximum output of 2000 lines
-- Text files only (binary files are ignored)
-- Files must be UTF-8 encoded
-
-## Error Handling
-
-The script includes comprehensive error handling for:
-- File reading errors
-- Directory access issues
-- Line limit exceeded
-- Invalid file encodings
+The tool generates three main output files in the `output` directory:
+- `contentPrinted.txt`: Full content of all processed files
+- `treePrinted.txt`: Visual directory structure
+- `projectSnapshotPrinted.txt`: Combined project snapshot
 
 ## Contributing
 
@@ -97,3 +66,22 @@ MIT
 ## Author
 
 @mollybeach
+
+## Project Structure
+
+```
+./project-snapshot-printer/
+├── .git/
+├── output/
+│   ├── contentPrinted.txt
+│   ├── projectSnapshotPrinted.txt
+│   └── treePrinted.txt
+├── repo-scanners/
+│   ├── contentPrinter.mjs
+│   ├── projectSnapshotPrinter.mjs
+│   └── treePrinter.mjs
+├── .DS_Store
+├── config.mjs
+└── README.md
+
+```
