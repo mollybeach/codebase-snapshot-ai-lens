@@ -3,9 +3,10 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 // Edit this path to the root of the project you want to scan
-export const projectRootPath = '../token-gating-discord-bot-api/client';
+export const projectRootPath = '../../branch/neuronet-consensus';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(fileURLToPath(
+    import.meta.url));
 
 export const outputPaths = {
     content: join(__dirname, 'output', 'contentPrinted.txt'),
@@ -22,7 +23,7 @@ export const ignorePatterns = [
     // Environment and secrets
     '.env', '.pem', '.secret',
     // IDE and Editor files
-    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath', 
+    '.idea', '.vscode', '.swp', '.swo', '.DS_Store', 'Thumbs.db', '.project', '.classpath',
     '.sublime-workspace', '.sublime-project',
     // Logs
     'logs', '.log', 'npm-debug.log', 'yarn-debug.log', 'yarn-error.log',
@@ -108,7 +109,7 @@ export const ignorePatterns = [
     'site-packages',
     'env',
     '__pycache__',
-    'lib',
+    // 'lib',
     'include',
     'bin',
     'migrations',
@@ -120,7 +121,7 @@ export const ignorePatterns = [
     'static',
 
     // Package files
-    'package.json', 
+    'package.json',
     'package-lock.json',
     'yarn.lock',
     'pnpm-lock.yaml',
@@ -150,6 +151,107 @@ export const ignorePatterns = [
 
     // Txt
     '.txt',
-    
+
     'i18n/',
+
+    // webpack
+    'webpack',
+
+    // next
+    'next',
+    'next-env.d.ts',
+    'next-env.d.ts.map',
+    'next-env.d.ts.map.json',
+    'next-env.d.ts.map.json.map',
+    'next-env.d.ts.map.json.map.json',
+
+    // tailwind
+    'tailwind.config.js',
+    'postcss.config.js',
+    'tailwind.config.ts',
+    'tailwind.config.ts.map',
+    'tailwind.config.ts.map.json',
+    'tailwind.config.ts.map.json.map',
+
+    // tsconfig
+    'tsconfig.json',
+    'tsconfig.app.json',
+    'tsconfig.tsbuildinfo',
+    'tsconfig.tsbuildinfo.json',
+    'tsconfig.tsbuildinfo.json.map',
+    'tsconfig.tsbuildinfo.json.map.json',
+
+    // edgedb
+    'edgedb.toml',
+    'edgeql-js.d.ts',
+    'edgedb.toml',
+    'edgedb.toml.map',
+    'edgedb.toml.map.json',
+    'edgedb.toml.map.json.map',
+    'migrations',
+    'edgeql-js',
+    'route_client-reference-manifest.js',
+    'DS_Store',
+    '.next',
+
+    'public',
+    'tailwind.config.js',
+    'tsconfig.app.json',
+    'tsconfig.json',
+    'tsconfig.tsbuildinfo',
+    'pnpm-lock.yaml',
+    'pnpm-workspace.yaml',
+    'postcss.config.js',
+    '.yarn',
+    'node_modules',
+    'package-lock.json',
+    'yarn.lock',
+    'tsconfig.json',
+    'tsconfig.app.json',
+    '.yarn/',
+    'unplugged/',
+    'unplugged/node_modules/',
+    'unplugged/node_modules/@img-sharp-darwin-arm64-npm-0.33.5-c319591c53/',
+    'unplugged/node_modules/@img-sharp-darwin-arm64-npm-0.33.5-c319591c53/node_modules/',
+    'unplugged/node_modules/@img-sharp-darwin-arm64-npm-0.33.5-c319591c53/node_modules/core-js/',
+    'unplugged/node_modules/@img-sharp-darwin-arm64-npm-0.33.5-c319591c53/node_modules/core-js/library/',
+
+    '/release',
+    '.fingerprint',
+    'fingerprint.txt',
+    'fingerprint.json',
+    'fingerprint.js',
+    'fingerprint.ts',
+    'fingerprint.d.ts',
+    'fingerprint.d.ts.map',
+    'fingerprint.d.ts.map.json',
+    'release',
+    'release.txt',
+    'release.json',
+    'release.js',
+    'release.ts',
+    'release.d.ts',
+    'release.d.ts.map',
+    'release.d.ts.map.json',
+    'deps',
+    'deps.json',
+    'deps.js',
+    'deps.ts',
+    'deps.d.ts',
+    'deps.d.ts.map',
+    'deps.d.ts.map.json',
+    '.o',
+    '.o.d.ts',
+    '.o.d.ts.map',
+    '.o.d.ts.map.json',
+    '.o.json',
+    '.o.js',
+    '.o.ts',
+    'incremental',
+    'incremental.json',
+    'incremental.js',
+    'incremental.ts',
+    'incremental.d.ts',
+    'incremental.d.ts.map',
+    'incremental.d.ts.map.json',
 ];

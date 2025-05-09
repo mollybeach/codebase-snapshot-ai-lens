@@ -1,0 +1,83 @@
+# macOS
+.DS_Store
+DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build output
+dist/
+build/
+out/
+*.min.js
+*.min.css
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Testing and Coverage
+coverage/
+.nyc_output/
+.jest/
+
+# Temp files
+tmp/
+temp/
+.temp/
+.tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+env/
+venv/
+pip-log.txt
+
+# Project specific output (from config.mjs)
+output/
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Database
+*.sqlite
+*.db

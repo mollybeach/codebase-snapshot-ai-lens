@@ -1,1964 +1,1862 @@
 
 
-=== File: ../token-gating-discord-bot-api/client/.babelrc ===
+=== File: ../../branch/app-brkt-v2/.eslintrc.json ===
 {
-    "presets": ["next/babel"],
-    "plugins": []
+  "extends": "next/core-web-vitals"
+}
+
+
+
+=== File: ../../branch/app-brkt-v2/.firebaserc ===
+{
+  "projects": {
+    "default": "brkt-app"
+  }
+}
+
+
+
+=== File: ../../branch/app-brkt-v2/README.md ===
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+
+
+=== File: ../../branch/app-brkt-v2/components.json ===
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  }
+}
+
+
+
+=== File: ../../branch/app-brkt-v2/firebase.json ===
+{
+  "firestore": {
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}
+
+
+=== File: ../../branch/app-brkt-v2/firebase.ts ===
+// firebase.ts
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { 
+  getAnalytics, 
+  logEvent, 
+  setUserProperties,
+  type Analytics,
+  type AnalyticsCallOptions
+} from "firebase/analytics";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBF6zSQQowt2d2XheqfKy-b1X3ULDjOOXE",
+  authDomain: "hookt.app",
+  projectId: "brkt-app",
+  storageBucket: "brkt-app.appspot.com",
+  messagingSenderId: "815513528903",
+  appId: "1:815513528903:web:106602a610a74161a05f62"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const firestore = getFirestore(app);
+const storage = getStorage(app);
+const functions = getFunctions(app, "us-central1");
+
+export const analytics: Analytics | null =
+  typeof window !== "undefined" ? getAnalytics(app) : null;
+
+// Helper function to safely log events with proper typing
+export const logAnalyticsEvent = (
+  eventName: string,
+  eventParams?: { [key: string]: any }
+) => {
+  if (analytics) {
+    logEvent(analytics, eventName, eventParams);
+  }
+};
+
+// Helper function to safely set user properties with proper typing
+export const setAnalyticsUserProperties = (
+  properties: { [key: string]: any }
+) => {
+  if (analytics) {
+    setUserProperties(analytics, properties);
+  }
+};
+
+
+// Only initialize messaging on the client side.
+export const messaging =
+  typeof window !== "undefined" && "serviceWorker" in navigator
+    ? getMessaging(app)
+    : null;
+
+// Initialize Firebase Messaging and get a token.
+const initializeFirebaseMessaging = async (retryCount = 0): Promise<string | null> => {
+    if (!messaging || typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      return null;
+    }
+  
+    try {
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        throw new Error("Missing NEXT_PUBLIC_FIREBASE_VAPID_KEY in environment.");
+      }
+  
+      // Get the Firebase Messaging service worker registration specifically
+      let messagingRegistration = await navigator.serviceWorker.getRegistration('/firebase-cloud-messaging-push-scope/');
+      
+      // If no messaging service worker exists or if it needs updating, register it
+      if (!messagingRegistration) {
+        console.log("Registering Firebase Messaging service worker...");
+        messagingRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/firebase-cloud-messaging-push-scope/'
+        });
+      }
+  
+      // Wait for activation if needed
+      if (messagingRegistration.installing || messagingRegistration.waiting) {
+        await new Promise<void>((resolve) => {
+          messagingRegistration.addEventListener('activate', () => resolve(), { once: true });
+        });
+      }
+  
+      // Check notification permission
+      if (Notification.permission === "granted") {
+        try {
+          // Get existing token or generate new one using the messaging registration
+          const token = await getToken(messaging, {
+            vapidKey,
+            serviceWorkerRegistration: messagingRegistration
+          });
+          
+          if (token) {
+            console.log("FCM token available");
+            return token;
+          }
+        } catch (error) {
+          console.error("Error getting token:", error);
+          if (retryCount < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return initializeFirebaseMessaging(retryCount + 1);
+          }
+          throw error;
+        }
+      } else {
+        console.log("Requesting notification permission...");
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          return initializeFirebaseMessaging(retryCount);
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error in initializeFirebaseMessaging:", error);
+      if (retryCount < 3) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return initializeFirebaseMessaging(retryCount + 1);
+      }
+      throw error;
+    }
+  };
+  
+// Only set up messaging on the client side.
+if (typeof window !== "undefined" && messaging) {
+  // Initialize messaging when the app loads.
+  initializeFirebaseMessaging().catch(console.error);
+
+  // Set up foreground message handler.
+  onMessage(messaging, (payload) => {
+    // Only show notification if tab isn't visible
+    if (document.visibilityState !== 'visible' && payload.notification) {
+      // Don't show notification - let service worker handle it
+      console.log('Received foreground message but letting service worker handle it:', payload);
+      return;
+    }
+    // Log but don't show notification when tab is visible
+    console.log('Received foreground message:', payload);
+  });
+}
+
+
+export const sendTestFCMNotification = async () => {
+    if (!messaging || typeof window === "undefined") {
+      console.error("Messaging is not available");
+      return;
+    }
+    try {
+      const testNotification = httpsCallable(functions, "sendNotification");
+      const token = await getToken(messaging);
+      if (!token) {
+        console.error("No FCM token available");
+        return;
+      }
+      const result = await testNotification({
+        token,
+        data: {
+          type: "test",
+          url: "/",
+          title: "FCM Test Notification", 
+          body: "Testing FCM notification delivery"
+        },
+        webpush: {
+          headers: {
+            Urgency: "normal",
+            TTL: "86400"
+          },
+          notification: {
+            title: "FCM Test Notification",
+            body: "Testing FCM notification delivery",
+            requireInteraction: true,
+            icon: '/icon-192x192.png',
+            badge: '/badge-72x72.png',
+            tag: 'test_notification',
+            data: {
+              url: "/"
+            }
+          },
+          fcm_options: {
+            link: "/"
+          }
+        }
+      });
+      console.log("Test notification sent:", result);
+    } catch (error) {
+      console.error("Error sending test notification:", error);
+    }
+  };
+  
+export { auth, firestore, storage, functions };
+
+
+
+=== File: ../../branch/app-brkt-v2/firestore.indexes.json ===
+{
+    "indexes": [
+      {
+        "collectionGroup": "settings",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+          {
+            "fieldPath": "preferences.newMarkets",
+            "order": "ASCENDING"
+          },
+          {
+            "fieldPath": "__name__",
+            "order": "ASCENDING"
+          }
+        ]
+      },
+        {
+        "collectionGroup": "tokens",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "order": "ASCENDING"
+          },
+          {
+            "fieldPath": "__name__",
+            "order": "ASCENDING"
+          }
+        ]
+      },
+  
+      {
+        "collectionGroup": "votes",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+          {
+            "fieldPath": "competitionId",
+            "order": "ASCENDING"
+          },
+          {
+            "fieldPath": "__name__",
+            "order": "ASCENDING"
+          }
+        ]
+      }
+    ],
+    "fieldOverrides": []
+  }
+  
+
+
+=== File: ../../branch/app-brkt-v2/manifest.json ===
+{
+    "name": "Hookt",
+    "short_name": "Hookt",
+    "description": "Bet on relevant topics",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1B1B1B",
+    "theme_color": "#1B1B1B",
+    "orientation": "portrait",
+    "icons": [
+      {
+        "src": "/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ],
+    "gcm_sender_id": "815513528903"
   }
 
 
-=== File: ../token-gating-discord-bot-api/client/.eslintrc.json ===
+=== File: ../../branch/app-brkt-v2/postcss.config.mjs ===
+/** @type {import('postcss-load-config').Config} */
+const config = {
+  plugins: {
+    tailwindcss: {},
+  },
+};
+
+export default config;
+
+
+
+=== Directory: ../../branch/app-brkt-v2/functions ===
+
+
+=== File: ../../branch/app-brkt-v2/functions/.eslintrc.js ===
+module.exports = {
+  root: true, 
+  env: {
+    es6: true,
+    node: true,
+  },
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    project: ["tsconfig.json", "tsconfig.dev.json"],
+    sourceType: "module",
+  },
+  ignorePatterns: [
+    "/lib/**/*",
+    "/generated/**/*",
+  ],
+  plugins: [
+    "@typescript-eslint"
+  ],
+  rules: {
+    "quotes": ["error", "double"],
+    "indent": ["error", 2],
+  },
+};
+
+
+=== File: ../../branch/app-brkt-v2/functions/tsconfig.dev.json ===
 {
-  "extends": [
-    "next"
+  "include": [
+    ".eslintrc.js"
   ]
 }
 
 
 
-=== File: ../token-gating-discord-bot-api/client/README.md ===
+=== Directory: ../../branch/app-brkt-v2/functions/src ===
+
+
+=== File: ../../branch/app-brkt-v2/functions/src/index.ts ===
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import * as admin from "firebase-admin";
+
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+interface PendingVoteRecord {
+  userId: string;
+  competitionId: string;
+  competitionAddress: string;
+  prediction: number;
+  transactionHash?: string;
+  userOpHash?: string;
+  timestamp: admin.firestore.Timestamp;
+  status:
+    | "pending"
+    | "processing"
+    | "confirmed"
+    | "completed"
+    | "failed"
+    | "maxAttemptsReached"
+    | "verification_failed";
+  error?: string;
+  attempts: number;
+  leverageMultiplier?: number;
+  lastAttempt?: admin.firestore.Timestamp;
+  lastChecked?: admin.firestore.Timestamp;
+  completedAt?: admin.firestore.Timestamp;
+  failedAt?: admin.firestore.Timestamp;
+  maxAttemptsReachedAt?: admin.firestore.Timestamp;
+  verificationFailedAt?: admin.firestore.Timestamp;
+}
+
+// Collections and constants
+const PENDING_VOTES_COLLECTION = "pendingVotes";
+const CRITICAL_FAILURES_COLLECTION = "criticalFailures";
+const MAX_RECOVERY_ATTEMPTS = 5;
+const BATCH_SIZE = 100; // How many documents to process per "page"
+const BUNDLER_URL =
+  process.env.BUNDLER_URL ||
+  "https://bundler.biconomy.io/api/v2/8453/0192f7c6-6152-732f-8e6a-3c138662ec86";
+
+// ---------------------
+// HELPER: Verify if a vote is properly recorded
+// ---------------------
+const verifyVoteRecorded = async (
+  db: admin.firestore.Firestore,
+  userId: string,
+  competitionId: string,
+  prediction: number,
+  transactionHash: string
+): Promise<boolean> => {
+  try {
+    // Check main vote record
+    const userVoteRef = db.doc(`users/${userId}/votes/${competitionId}`);
+    const voteDoc = await userVoteRef.get();
+
+    if (!voteDoc.exists) {
+      console.log("Main vote record not found");
+      return false;
+    }
+
+    const voteData = voteDoc.data();
+    if (
+      voteData?.transactionHash !== transactionHash ||
+      voteData?.status !== "completed"
+    ) {
+      console.log("Transaction hash mismatch or status not completed", {
+        expectedHash: transactionHash,
+        actualHash: voteData?.transactionHash,
+        status: voteData?.status,
+      });
+      return false;
+    }
+
+    // Check competition votes
+    const competitionRef = db.doc(`competitions/${competitionId}`);
+    const competitionDoc = await competitionRef.get();
+    if (!competitionDoc.exists) {
+      console.log("Competition not found");
+      return false;
+    }
+
+    const voteTypeRef = db.doc(
+      `competitions/${competitionId}/${
+        prediction === 1 ? "yesVotes" : "noVotes"
+      }/${userId}`
+    );
+
+    const competitionVoteDoc = await voteTypeRef.get();
+    if (!competitionVoteDoc.exists) {
+      console.log("Competition vote document not found");
+      return false;
+    }
+
+    // Verify competition total count
+    const competitionData = competitionDoc.data();
+    const expectedField = prediction === 1 ? "yesVotes" : "noVotes";
+    const voteCount = competitionData?.[expectedField] || 0;
+
+    if (voteCount === 0) {
+      console.log("Vote count is 0 but vote document exists");
+      return false;
+    }
+
+    console.log("Vote verification passed all checks");
+    return true;
+  } catch (error) {
+    console.error("Vote verification failed with error:", error);
+    return false;
+  }
+};
+
+// ---------------------
+// HELPER: Check receipt from bundler
+// ---------------------
+async function checkUserOpReceipt(userOpHash: string): Promise<any> {
+  if (!BUNDLER_URL) {
+    console.error("No bundler URL configured");
+    return null;
+  }
+
+  try {
+    console.log("Using bundler URL:", BUNDLER_URL);
+    console.log("Checking receipt for userOpHash:", userOpHash);
+
+    const response = await fetch(BUNDLER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        method: "eth_getUserOperationReceipt",
+        id: Date.now(),
+        params: [userOpHash],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("HTTP error from bundler:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
+      throw new Error(
+        `HTTP error! status: ${response.status}, body: ${errorText}`
+      );
+    }
+
+    const data = await response.json();
+    console.log("Receipt response data:", JSON.stringify(data, null, 2));
+
+    if (data.error) {
+      console.error("RPC error from bundler:", data.error);
+      throw new Error(`RPC error: ${JSON.stringify(data.error)}`);
+    }
+
+    if (!data.result) {
+      console.log("No receipt found yet, null result is normal while waiting");
+    } else {
+      console.log("Receipt found:", JSON.stringify(data.result, null, 2));
+    }
+
+    return data.result;
+  } catch (error) {
+    console.error("Error checking receipt:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      userOpHash,
+      bundlerUrl: BUNDLER_URL,
+    });
+    return null;
+  }
+}
+
+// ---------------------
+// HELPER: Handle votes that reached max attempts
+// ---------------------
+async function handleMaxAttemptsReached(
+  db: admin.firestore.Firestore,
+  voteDoc: admin.firestore.QueryDocumentSnapshot,
+  voteData: PendingVoteRecord,
+  error: any
+): Promise<void> {
+  console.log(`Handling vote ${voteDoc.id} that reached max attempts`);
+
+  try {
+    const now = admin.firestore.Timestamp.now();
+
+    // Update the vote record to mark it as max attempts reached
+    await db.collection(PENDING_VOTES_COLLECTION).doc(voteDoc.id).update({
+      status: "maxAttemptsReached",
+      maxAttemptsReachedAt: now,
+      finalError: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    // Also create a record in critical failures for monitoring
+    await db.collection(CRITICAL_FAILURES_COLLECTION).doc(voteDoc.id).set({
+      ...voteData,
+      status: "maxAttemptsReached",
+      maxAttemptsReachedAt: now,
+      finalError: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    console.log(
+      `Vote ${voteDoc.id} marked as max attempts reached and logged to critical failures`
+    );
+  } catch (updateError) {
+    console.error(`Error handling max attempts for vote ${voteDoc.id}:`, updateError);
+  }
+}
+
+// ---------------------
+// HELPER: Recovery function with on-chain verification
+// ---------------------
+async function recoverVote(
+  db: admin.firestore.Firestore,
+  voteDoc: admin.firestore.QueryDocumentSnapshot
+): Promise<void> {
+  const voteData = voteDoc.data() as PendingVoteRecord;
+  const voteRef = db.doc(`${PENDING_VOTES_COLLECTION}/${voteDoc.id}`);
+
+  console.log("Processing vote:", voteDoc.id, voteData);
+
+  // Skip completed votes
+  if (voteData.status === "completed") {
+    console.log("Vote already completed:", voteDoc.id);
+    return;
+  }
+
+  // Check max attempts
+  if (voteData.attempts >= MAX_RECOVERY_ATTEMPTS) {
+    console.log(`Vote ${voteDoc.id} has reached max attempts`);
+    await handleMaxAttemptsReached(
+      db,
+      voteDoc,
+      voteData,
+      new Error("Max recovery attempts reached")
+    );
+    return;
+  }
+
+  try {
+    // Update attempt count
+    await voteRef.update({
+      attempts: admin.firestore.FieldValue.increment(1),
+      lastAttempt: admin.firestore.Timestamp.now(),
+    });
+
+    // If we have a userOpHash, check its status
+    if (voteData.userOpHash) {
+      console.log("Checking userOp status for:", voteData.userOpHash);
+      const receipt = await checkUserOpReceipt(voteData.userOpHash);
+
+      if (receipt) {
+        console.log("Receipt found:", receipt);
+
+        if (receipt.success === true || receipt.success === "true") {
+          const transactionHash =
+            receipt.receipt?.transactionHash ||
+            receipt.transactionHash ||
+            receipt.userOpHash;
+
+          // Update status to confirmed with transaction hash
+          await voteRef.update({
+            status: "confirmed",
+            transactionHash,
+            lastChecked: admin.firestore.Timestamp.now(),
+          });
+
+          // Verify the vote was recorded properly
+          const isVerified = await verifyVoteRecorded(
+            db,
+            voteData.userId,
+            voteData.competitionId,
+            voteData.prediction,
+            transactionHash
+          );
+
+          if (isVerified) {
+            console.log("Vote verified successfully:", voteDoc.id);
+            // Delete the pending vote since it's verified
+            await voteRef.delete();
+            console.log(`Deleted verified vote ${voteDoc.id} from pending votes`);
+          } else {
+            console.log("Vote verification failed, attempting recovery:", voteDoc.id);
+            await performFirestoreRecovery(db, voteData, transactionHash);
+          }
+        } else {
+          console.log("UserOp failed:", receipt);
+          // Mark as failed if the transaction failed
+          await voteRef.update({
+            status: "failed",
+            error: "Transaction failed on-chain",
+            failedAt: admin.firestore.Timestamp.now(),
+          });
+        }
+      } else {
+        console.log("No receipt found yet for:", voteData.userOpHash);
+      }
+    }
+  } catch (error) {
+    console.error(`Recovery attempt failed for vote ${voteDoc.id}:`, error);
+
+    // If this was the last attempt, handle the failure
+    if (voteData.attempts >= MAX_RECOVERY_ATTEMPTS - 1) {
+      await handleMaxAttemptsReached(db, voteDoc, voteData, error);
+    }
+  }
+}
+
+// ---------------------
+// HELPER: Perform Firestore recovery
+// ---------------------
+async function performFirestoreRecovery(
+  db: admin.firestore.Firestore,
+  voteData: PendingVoteRecord,
+  transactionHash: string
+): Promise<void> {
+  await db.runTransaction(async (transaction) => {
+    console.log("Starting Firestore recovery for vote:", voteData);
+
+    const competitionRef = db.doc(`competitions/${voteData.competitionId}`);
+    const competitionDoc = await transaction.get(competitionRef);
+
+    if (!competitionDoc.exists) {
+      throw new Error("Competition not found");
+    }
+
+    const userVoteRef = db.doc(
+      `competitions/${voteData.competitionId}/${
+        voteData.prediction === 1 ? "yesVotes" : "noVotes"
+      }/${voteData.userId}`
+    );
+
+    const userVoteRef2 = db.doc(
+      `users/${voteData.userId}/votes/${voteData.competitionId}`
+    );
+
+    const leverageMultiplier = voteData.leverageMultiplier || 1;
+    console.log("Using leverage multiplier:", leverageMultiplier);
+
+    const voteData2 = {
+      userId: voteData.userId,
+      timestamp: admin.firestore.Timestamp.now(),
+      crowns: 0,
+      leverageMultiplier,
+      transactionHash,
+    };
+
+    // Update vote counts with leverage
+    const updateData: any = {};
+    if (voteData.prediction === 1) {
+      updateData.yesVotes = admin.firestore.FieldValue.increment(leverageMultiplier);
+    } else {
+      updateData.noVotes = admin.firestore.FieldValue.increment(leverageMultiplier);
+    }
+
+    console.log("Updating competition with:", updateData);
+    transaction.update(competitionRef, updateData);
+
+    // Set vote records
+    console.log("Setting user vote records");
+    transaction.set(userVoteRef, voteData2);
+    transaction.set(userVoteRef2, {
+      yes: voteData.prediction === 1 ? leverageMultiplier : 0,
+      no: voteData.prediction === 0 ? leverageMultiplier : 0,
+      timestamp: admin.firestore.Timestamp.now(),
+      status: "completed",
+      transactionHash,
+      crowns: 0,
+      leverageMultiplier,
+    });
+
+    // Update category voters
+    const categoryPath = competitionDoc.data()?.category;
+    if (categoryPath) {
+      const categoryVotersRef = db.doc(
+        `categoryVoters/${categoryPath.split("/").join("_")}`
+      );
+      transaction.set(
+        categoryVotersRef,
+        {
+          voters: admin.firestore.FieldValue.arrayUnion(voteData.userId),
+          lastUpdated: admin.firestore.Timestamp.now(),
+        },
+        { merge: true }
+      );
+    }
+  });
+}
+
+// ---------------------
+// HELPER: Fetch a single "page" of pending votes
+// ---------------------
+async function fetchPendingVotesPage(
+  db: admin.firestore.Firestore,
+  lastDoc: admin.firestore.QueryDocumentSnapshot | null,
+  timeoutDuration: number,
+  batchSize: number
+): Promise<{
+  docs: admin.firestore.QueryDocumentSnapshot[];
+  lastDoc: admin.firestore.QueryDocumentSnapshot | null;
+}> {
+  let query = db
+    .collection(PENDING_VOTES_COLLECTION)
+    .where("status", "in", ["pending", "processing"])
+    .where(
+      "timestamp",
+      "<=",
+      admin.firestore.Timestamp.fromMillis(Date.now() - timeoutDuration)
+    )
+    .orderBy("timestamp", "asc")
+    .limit(batchSize);
+
+  if (lastDoc) {
+    query = query.startAfter(lastDoc);
+  }
+
+  const snapshot = await query.get();
+  if (snapshot.empty) {
+    return { docs: [], lastDoc: null };
+  }
+
+  return {
+    docs: snapshot.docs,
+    lastDoc: snapshot.docs[snapshot.docs.length - 1],
+  };
+}
+
+// ---------------------
+// MAIN: Monitor Pending Votes (with pagination)
+// ---------------------
+export const monitorPendingVotes = onSchedule(
+  {
+    schedule: "every 10 minutes",
+    memory: "256MiB",
+  },
+  async () => {
+    const db = admin.firestore();
+    const timeoutDuration = 10 * 60 * 1000; // 10 minutes
+
+    let lastDoc: admin.firestore.QueryDocumentSnapshot | null = null;
+    let totalProcessed = 0;
+
+    try {
+      console.log("Starting vote monitoring with pagination...");
+      
+      let hasMoreDocs = true;
+      while (hasMoreDocs) {
+        const { docs, lastDoc: newLastDoc }: {
+          docs: admin.firestore.QueryDocumentSnapshot[];
+          lastDoc: admin.firestore.QueryDocumentSnapshot | null;
+        } = await fetchPendingVotesPage(
+          db,
+          lastDoc,
+          timeoutDuration,
+          BATCH_SIZE
+        );
+        
+        lastDoc = newLastDoc;
+
+        if (docs.length === 0) {
+          console.log(
+            `No more pending votes. Total processed so far: ${totalProcessed}`
+          );
+          hasMoreDocs = false;
+          continue;
+        }
+
+        console.log(`Processing a batch of ${docs.length} votes...`);
+
+        const recoveryPromises = docs.map((doc: admin.firestore.QueryDocumentSnapshot) => recoverVote(db, doc));
+        await Promise.all(recoveryPromises);
+
+        totalProcessed += docs.length;
+        console.log(`Batch processed. Total processed so far: ${totalProcessed}`);
+
+        if (docs.length < BATCH_SIZE) {
+          console.log("All matching votes in this run have been processed.");
+          hasMoreDocs = false;
+        }
+      }
+
+      console.log("Completed recovery attempts for all pending votes.");
+    } catch (error) {
+      console.error("Error in monitorPendingVotes with pagination:", error);
+      throw error;
+    }
+  }
+);
+
+// ---------------------
+// Cleanup of completed votes
+// ---------------------
+export const cleanupCompletedVotes = onSchedule(
+  {
+    schedule: "every 1 hours",
+    memory: "256MiB",
+  },
+  async (event) => {
+    const db = admin.firestore();
+    const batchSize = 500;
+
+    try {
+      console.log("Starting cleanup of completed votes...");
+
+      // Get completed votes that are at least 30 minutes old
+      const safetyBuffer = 30 * 60 * 1000; // 30 minutes in milliseconds
+      const completedVotes = await db
+        .collection(PENDING_VOTES_COLLECTION)
+        .where("status", "==", "completed")
+        .where(
+          "completedAt",
+          "<=",
+          admin.firestore.Timestamp.fromMillis(Date.now() - safetyBuffer)
+        )
+        .limit(batchSize)
+        .get();
+
+      if (completedVotes.empty) {
+        console.log("No completed votes to clean up");
+        return;
+      }
+
+      console.log(
+        `Found ${completedVotes.size} completed votes to verify and clean up`
+      );
+
+      const batch = db.batch();
+      let batchCount = 0;
+
+      for (const doc of completedVotes.docs) {
+        const voteData = doc.data() as PendingVoteRecord;
+
+        // Double-check verification before deletion
+        const isVerified = await verifyVoteRecorded(
+          db,
+          voteData.userId,
+          voteData.competitionId,
+          voteData.prediction,
+          voteData.transactionHash || ""
+        );
+
+        if (isVerified) {
+          batch.delete(doc.ref);
+          batchCount++;
+        } else {
+          console.warn(
+            `Vote ${doc.id} marked as completed but verification failed - keeping record`
+          );
+          // Mark for investigation
+          batch.update(doc.ref, {
+            status: "verification_failed",
+            verificationFailedAt: admin.firestore.Timestamp.now(),
+          });
+        }
+
+        // Commit when batch is full
+        if (batchCount >= 500) {
+          await batch.commit();
+          console.log(`Committed batch of ${batchCount} deletions`);
+          batchCount = 0;
+        }
+      }
+
+      // Commit any remaining operations
+      if (batchCount > 0) {
+        await batch.commit();
+        console.log(`Committed final batch of ${batchCount} operations`);
+      }
+
+      console.log("Completed cleanup of verified votes");
+    } catch (error) {
+      console.error("Error in cleanupCompletedVotes:", error);
+      throw error;
+    }
+  }
+);
+
+// ---------------------
+// Cleanup of old maxAttemptsReached votes
+// ---------------------
+export const cleanupMaxAttemptsVotes = onSchedule(
+  {
+    schedule: "every 24 hours",
+    memory: "256MiB",
+  },
+  async (event) => {
+    const db = admin.firestore();
+    const retentionPeriod = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+    try {
+      console.log("Starting cleanup of old maxAttemptsReached votes...");
+
+      // Get votes that reached max attempts more than 7 days ago
+      const oldVotes = await db
+        .collection(PENDING_VOTES_COLLECTION)
+        .where("status", "==", "maxAttemptsReached")
+        .where(
+          "maxAttemptsReachedAt",
+          "<=",
+          admin.firestore.Timestamp.fromMillis(Date.now() - retentionPeriod)
+        )
+        .limit(BATCH_SIZE)
+        .get();
+
+      if (oldVotes.empty) {
+        console.log("No old votes to clean up");
+        return;
+      }
+
+      console.log(`Found ${oldVotes.size} old votes to clean up`);
+
+      // Delete votes in batches
+      const batch = db.batch();
+      let batchCount = 0;
+
+      for (const doc of oldVotes.docs) {
+        batch.delete(doc.ref);
+        batchCount++;
+
+        // Commit when batch is full
+        if (batchCount >= 500) {
+          await batch.commit();
+          console.log(`Committed batch of ${batchCount} deletions`);
+          batchCount = 0;
+        }
+      }
+
+      // Commit any remaining deletions
+      if (batchCount > 0) {
+        await batch.commit();
+        console.log(`Committed final batch of ${batchCount} deletions`);
+      }
+
+      console.log("Completed cleanup of old maxAttemptsReached votes");
+    } catch (error) {
+      console.error("Error in cleanupMaxAttemptsVotes:", error);
+      throw error;
+    }
+  }
+);
+
+
+
+=== File: ../../branch/app-brkt-v2/functions/src/notifications.ts ===
+import * as functions from "firebase-functions/v2";
+import * as admin from "firebase-admin";
+import { FirestoreEvent, Change } from "firebase-functions/v2/firestore";
+import { QueryDocumentSnapshot } from "firebase-admin/firestore";
+import { HttpsError } from "firebase-functions/v2/https";
+import { CallableRequest } from "firebase-functions/v2/https";
+
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+const db = admin.firestore();
+const messaging = admin.messaging();
+
+// Constants
+const BATCH_SIZE = 500;           // Max batch size for Firestore writes/deletes
+const MAX_MULTICAST_SIZE = 500;   // FCM max tokens per sendEachForMulticast
+const MAX_IN_QUERY = 10;          // Firestore "IN" operator limit
+
+interface FeaturedMarketData {
+  competitionId: string;
+  title: string;
+  category: string;
+  image: string;
+  tags: string[];
+  featured: boolean;
+}
+
+// -----------------------------------------------------------------------
+// 1. HELPER FUNCTIONS FOR BATCHED "IN" QUERIES
+// -----------------------------------------------------------------------
+
+/**
+ * Chunk an array into sub-arrays of size up to `maxSize`.
+ */
+function chunkArray<T>(array: T[], maxSize: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += maxSize) {
+    chunks.push(array.slice(i, i + maxSize));
+  }
+  return chunks;
+}
+
+/**
+ * Fetch user documents in batches of up to 10 user IDs per "in" query.
+ */
+async function getUserDocsInBatches(userIds: string[]): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  const allUserDocs: admin.firestore.QueryDocumentSnapshot[] = [];
+  const idChunks = chunkArray(userIds, MAX_IN_QUERY);
+
+  for (const chunk of idChunks) {
+    const snap = await db
+      .collection("users")
+      .where(admin.firestore.FieldPath.documentId(), "in", chunk)
+      .get();
+    allUserDocs.push(...snap.docs);
+  }
+
+  return allUserDocs;
+}
+
+/**
+ * Fetch tokens in batches, using "in" queries for userId up to 10 at a time.
+ */
+async function getTokenDocsInBatches(userIds: string[]): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  const allTokenDocs: admin.firestore.QueryDocumentSnapshot[] = [];
+  const idChunks = chunkArray(userIds, MAX_IN_QUERY);
+
+  for (const chunk of idChunks) {
+    const snap = await db
+      .collectionGroup("tokens")
+      .where("userId", "in", chunk)
+      .get();
+    allTokenDocs.push(...snap.docs);
+  }
+
+  return allTokenDocs;
+}
+
+/**
+ * Fetch the "notifications" doc in the "settings" sub-collection
+ * for the given doc path arrays in chunks.
+ *
+ * Since your doc path is /users/{userId}/settings/notifications,
+ * we can build the doc ID as `users/${userId}/settings/notifications`
+ * and query by documentId in the "settings" collectionGroup.
+ */
+async function getSettingsDocsInBatches(docPaths: string[]): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  const allSettingsDocs: admin.firestore.QueryDocumentSnapshot[] = [];
+  const pathChunks = chunkArray(docPaths, MAX_IN_QUERY);
+
+  for (const chunk of pathChunks) {
+    const snap = await db
+      .collection("settings") // collectionGroup on "settings" sub-collections
+      .where(admin.firestore.FieldPath.documentId(), "in", chunk)
+      .get();
+    allSettingsDocs.push(...snap.docs);
+  }
+
+  return allSettingsDocs;
+}
+
+// -----------------------------------------------------------------------
+// 2. MARKET RESOLUTION NOTIFICATIONS
+// -----------------------------------------------------------------------
+
+export const onMarketResolution = functions.firestore.onDocumentUpdated(
+  "competitions/{competitionId}",
+  async (event: FirestoreEvent<Change<QueryDocumentSnapshot> | undefined>) => {
+    if (!event.data) return;
+
+    const newData = event.data.after.data();
+    const previousData = event.data.before.data();
+    if (!newData || !previousData) return;
+
+    // Only trigger if status changes to "resolved"
+    if (newData.status === "resolved" && previousData.status !== "resolved") {
+      const competitionId = event.params.competitionId;
+
+      try {
+        // 1) Get all votes for this competition
+        const votesSnapshot = await db
+          .collectionGroup("votes")
+          .where("competitionId", "==", competitionId)
+          .get();
+
+        // 2) Group votes by user ID
+        const userVotes = new Map<string, { yes: boolean; no: boolean }>();
+        votesSnapshot.docs.forEach((doc) => {
+          const userId = doc.ref.parent.parent?.id; // /users/{userId}/votes/{voteId}
+          if (!userId) return;
+          const vote = doc.data();
+          userVotes.set(userId, { yes: vote.yes, no: vote.no });
+        });
+
+        if (userVotes.size === 0) return;
+
+        // 3) Get user "notifications" docs in "settings" collection for these users
+        //    doc path is "users/{userId}/settings/notifications"
+        const docPaths = Array.from(userVotes.keys()).map(
+          (id) => `users/${id}/settings/notifications`
+        );
+        const prefsSnapshot = await getSettingsDocsInBatches(docPaths);
+
+        // 4) Get tokens for these users
+        const userIds = Array.from(userVotes.keys());
+        const tokensSnapshot = await getTokenDocsInBatches(userIds);
+
+        // 5) Group tokens by user
+        const userTokens = new Map<string, string[]>();
+        tokensSnapshot.forEach((doc) => {
+          const data = doc.data();
+          const userId = data.userId;
+          const token = data.token;
+          if (userId && token) {
+            const tokens = userTokens.get(userId) || [];
+            tokens.push(token);
+            userTokens.set(userId, tokens);
+          }
+        });
+
+        // 6) Build notifications for each user
+        const notificationBatches: {
+          message: admin.messaging.MulticastMessage;
+          userId: string;
+        }[] = [];
+        const invalidTokens = new Map<string, Set<string>>();
+
+        for (const [userId, vote] of userVotes.entries()) {
+          // Find this user's "notifications" doc
+          const userDoc = prefsSnapshot.find((doc) => doc.id === `users/${userId}/settings/notifications`);
+          if (!userDoc) continue;
+
+          const userPrefs = userDoc.data()?.preferences;
+          if (!userPrefs?.winnerNotifications) continue;
+
+          const tokens = userTokens.get(userId);
+          if (!tokens?.length) continue;
+
+          const votedCorrectly =
+            (vote.yes && newData.resolution === "yes") ||
+            (vote.no && newData.resolution === "no");
+
+          // Split tokens into chunks of 500 for FCM
+          const tokenChunks = chunkArray(tokens, MAX_MULTICAST_SIZE);
+
+          tokenChunks.forEach((chunk) => {
+            notificationBatches.push({
+              message: {
+                notification: {
+                  title: votedCorrectly
+                    ? "Congratulations! You won! 🎉"
+                    : "Market Resolved",
+                  body: votedCorrectly
+                    ? `You correctly predicted "${newData.title}"! Claim your rewards now.`
+                    : `The market "${newData.title}" has been resolved.`,
+                },
+                data: {
+                  type: votedCorrectly ? "winner" : "market_resolution",
+                  competitionId,
+                  url: `/competition/${competitionId}`,
+                },
+                tokens: chunk,
+              },
+              userId,
+            });
+          });
+        }
+
+        // 7) Send notifications in parallel
+        const results = await Promise.allSettled(
+          notificationBatches.map(async (batch) => {
+            try {
+              const response = await messaging.sendEachForMulticast(batch.message);
+              // Track invalid tokens
+              response.responses.forEach((resp, idx) => {
+                if (!resp.success && batch.message.tokens[idx]) {
+                  const badTokenSet = invalidTokens.get(batch.userId) || new Set<string>();
+                  badTokenSet.add(batch.message.tokens[idx]);
+                  invalidTokens.set(batch.userId, badTokenSet);
+                }
+              });
+              return response;
+            } catch (error: unknown) {
+              console.error("Error sending notification batch:", error);
+              return null;
+            }
+          })
+        );
+
+        // 8) Clean up invalid tokens
+        if (invalidTokens.size > 0) {
+          let operationCount = 0;
+          let batch = db.batch();
+
+          for (const [userId, tokens] of invalidTokens.entries()) {
+            for (const token of tokens) {
+              batch.delete(db.doc(`users/${userId}/tokens/${token}`));
+              operationCount++;
+              if (operationCount >= BATCH_SIZE) {
+                await batch.commit();
+                batch = db.batch();
+                operationCount = 0;
+              }
+            }
+          }
+
+          if (operationCount > 0) {
+            await batch.commit();
+          }
+        }
+
+        console.log("Market resolution notifications completed:", {
+          totalUsers: userVotes.size,
+          notificationsSent: results.length,
+          successful: results.filter((r) => r && r.status === "fulfilled").length,
+        });
+      } catch (error: unknown) {
+        console.error("Error processing market resolution:", error);
+      }
+    }
+  }
+);
+
+// -----------------------------------------------------------------------
+// 3. NEW FEATURED MARKET NOTIFICATIONS
+// -----------------------------------------------------------------------
+
+export const onNewFeaturedMarket = functions.firestore.onDocumentCreated(
+  "competitions/{competitionId}",
+  async (event: FirestoreEvent<QueryDocumentSnapshot | undefined>) => {
+    if (!event.data) return;
+
+    const marketData = event.data.data() as FeaturedMarketData;
+    const competitionId = event.params.competitionId;
+
+    // Only send notifications if "featured" is true
+    if (!marketData.featured) return;
+
+    try {
+      // 1) Get all "notifications" docs in the "settings" sub-collection
+      //    where preferences.newMarkets == true
+      //    The doc name is "notifications" inside "settings" for each user.
+      //
+      //    We can do a collectionGroup("settings") with a simple where:
+      //    .where("preferences.newMarkets", "==", true)
+      //
+      //    That returns all docs in all sub-collections named "settings"
+      //    that have preferences.newMarkets == true
+      const userPrefsSnapshot = await db
+        .collectionGroup("settings")
+        .where("preferences.newMarkets", "==", true)
+        .get();
+
+      if (userPrefsSnapshot.empty) {
+        console.log("No users have newMarkets enabled.");
+        return;
+      }
+
+      // 2) From these docs, get user IDs
+      //    doc.ref.parent.parent = user doc
+      const userIds = userPrefsSnapshot.docs
+        .map((doc) => doc.ref.parent.parent?.id)
+        .filter(Boolean) as string[];
+
+      if (!userIds.length) return;
+
+      // 3) Fetch the actual "users" documents in batches (to get categories, etc.)
+      const usersSnapshotDocs = await getUserDocsInBatches(userIds);
+
+      // 4) Fetch all tokens for these users in batches
+      const tokensSnapshotDocs = await getTokenDocsInBatches(userIds);
+
+      // 5) Determine which users are interested in this market
+      //    We'll store user ID => tokens
+      const eligibleUsers = new Map<string, string[]>();
+
+      // Build a quick map of userId => categories array
+      const userCategoriesMap = new Map<string, string[]>();
+      usersSnapshotDocs.forEach((doc) => {
+        const userData = doc.data();
+        const categories: string[] = userData.categories || [];
+        userCategoriesMap.set(doc.id, categories);
+      });
+
+      const marketCategory = marketData.category.toLowerCase().trim();
+      const marketTags = new Set(
+        (marketData.tags || []).map((t) => t.toLowerCase().trim())
+      );
+
+      // 6) Figure out which users have overlapping category/tags
+      for (const doc of usersSnapshotDocs) {
+        const userId = doc.id;
+        const categories = userCategoriesMap.get(userId) || [];
+        const userCategoriesSet = new Set(
+          categories.map((cat) => cat.toLowerCase().trim())
+        );
+
+        // Check if user categories includes the marketCategory or any marketTags
+        const isInterestedInCategory =
+          userCategoriesSet.has(marketCategory) ||
+          [...marketTags].some((tag) => userCategoriesSet.has(tag));
+
+        if (isInterestedInCategory) {
+          eligibleUsers.set(userId, []);
+        }
+      }
+
+      // 7) Group tokens by user (only for those in eligibleUsers)
+      tokensSnapshotDocs.forEach((doc) => {
+        const data = doc.data();
+        const userId = data.userId;
+        const token = data.token;
+        if (userId && token && eligibleUsers.has(userId)) {
+          const arr = eligibleUsers.get(userId) || [];
+          arr.push(token);
+          eligibleUsers.set(userId, arr);
+        }
+      });
+
+      if (eligibleUsers.size === 0) {
+        console.log("No users are interested in this market's category/tags.");
+        return;
+      }
+
+      // 8) Build and send notifications in batches
+      const notificationBatches: {
+        message: admin.messaging.MulticastMessage;
+        userId: string;
+      }[] = [];
+
+      for (const [userId, tokens] of eligibleUsers.entries()) {
+        if (!tokens.length) continue;
+
+        // Split tokens into chunks of 500 for FCM
+        const tokenChunks = chunkArray(tokens, MAX_MULTICAST_SIZE);
+        for (const chunk of tokenChunks) {
+          notificationBatches.push({
+            message: {
+              notification: {
+                title: "New Featured Market! 🌟",
+                body: `${marketData.title} - Predict now in ${marketData.category}`,
+              },
+              data: {
+                type: "new_market",
+                competitionId,
+                url: `/competition/${competitionId}`,
+                category: marketData.category,
+                featured: "true",
+              },
+              tokens: chunk,
+            },
+            userId,
+          });
+        }
+      }
+
+      // 9) Send notifications in parallel
+      const results = await Promise.allSettled(
+        notificationBatches.map(async (batch) => {
+          try {
+            const response = await messaging.sendEachForMulticast(batch.message);
+
+            // Log results
+            await db.collection("notificationLogs").add({
+              type: "new_featured_market",
+              userId: batch.userId,
+              competitionId,
+              marketTitle: marketData.title,
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+              success: response.successCount > 0,
+              tokensCount: batch.message.tokens.length,
+              successCount: response.successCount,
+              failureCount: response.failureCount,
+            });
+
+            // Clean up invalid tokens
+            if (response.failureCount > 0) {
+              const invalidTokens = response.responses
+                .map((resp, idx) => (!resp.success ? batch.message.tokens[idx] : null))
+                .filter(Boolean) as string[];
+
+              if (invalidTokens.length > 0) {
+                const cleanupBatch = db.batch();
+                invalidTokens.forEach((t) => {
+                  cleanupBatch.delete(db.doc(`users/${batch.userId}/tokens/${t}`));
+                });
+                await cleanupBatch.commit();
+              }
+            }
+
+            return response;
+          } catch (error: unknown) {
+            console.error("Error sending notification batch:", error);
+            return null;
+          }
+        })
+      );
+
+      console.log("Featured market notifications completed:", {
+        eligibleUsers: eligibleUsers.size,
+        notificationsSent: results.length,
+        successful: results.filter((r) => r && r.status === "fulfilled").length,
+      });
+    } catch (error: unknown) {
+      console.error("Error in onNewFeaturedMarket:", error);
+      throw new HttpsError("internal", "Notification processing failed");
+    }
+  }
+);
+
+// -----------------------------------------------------------------------
+// 4. TEST NOTIFICATION (onCall)
+// -----------------------------------------------------------------------
+
+export const sendTestNotification = functions.https.onCall(
+  async (request: CallableRequest) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be authenticated");
+    }
+    const userId = request.auth.uid;
+
+    try {
+      // Grab all tokens from this user
+      const tokensSnapshot = await db.collection(`users/${userId}/tokens`).get();
+      const tokens = tokensSnapshot.docs
+        .map((doc) => doc.data().token as string)
+        .filter(Boolean);
+
+      if (tokens.length === 0) {
+        throw new HttpsError("failed-precondition", "No FCM tokens found");
+      }
+
+      // Build a test message
+      const message: admin.messaging.MulticastMessage = {
+        notification: {
+          title: "Test FCM Notification 🔔",
+          body: "This is a test notification sent through Firebase Cloud Messaging",
+        },
+        data: {
+          type: "test",
+          timestamp: Date.now().toString(),
+        },
+        // Send to the first 500 tokens only (just in case)
+        tokens: tokens.slice(0, MAX_MULTICAST_SIZE),
+      };
+
+      // Send the message
+      const response = await messaging.sendEachForMulticast(message);
+
+      // Clean up invalid tokens
+      if (response.failureCount > 0) {
+        const batch = db.batch();
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success && tokens[idx]) {
+            batch.delete(db.doc(`users/${userId}/tokens/${tokens[idx]}`));
+          }
+        });
+        await batch.commit();
+      }
+
+      return {
+        success: true,
+        tokensCount: tokens.length,
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+      };
+    } catch (error: unknown) {
+      console.error("Error sending test notification:", error);
+      throw new HttpsError("internal", "Failed to send test notification");
+    }
+  }
+);
+
+
+
+=== Directory: ../../branch/app-brkt-v2/src ===
+
+
+=== File: ../../branch/app-brkt-v2/src/types.ts ===
+import { User as FirebaseUser } from "firebase/auth";
+
+export interface ExtendedUser {
+  uid: string;
+  email: string;
+  emailVerified: boolean;
+  isAnonymous: boolean;
+  metadata: {
+    creationTime?: string;
+    lastSignInTime?: string;
+  };
+  providerData: Array<{
+    providerId: string;
+    uid: string;
+    displayName: string | null;
+    email: string | null;
+    phoneNumber: string | null;
+    photoURL: string | null;
+  }>;
+  username: string;
+  credits: number;
+  photoURL: string | null;
+  biconomyAddress?: string;
+  hasSmartAccount?: boolean;
+  playMode?: boolean; 
+}
+
+export interface ClaimsState {
+  pendingClaimsCount: number;
+  totalClaimableAmount: number;
+  isUSDC: boolean;
+  loading: boolean;
+  lastFetchedAt: number | null;
+  error: string | null;
+}
+
+
+export interface BiconomyUser {
+  biconomyAddress?: string;
+  hasSmartAccount?: boolean;
+}
+
+export interface ActivityItem {
+  id: string;
+  title: string;
+  image: string;
+  vote: "yes" | "no";
+  timeAgo: string;
+  timestamp: string;
+  earnings: number;
+  status: string;
+  crowns: number;
+  category: string;
+  tags: string[];
+  endDate: string;
+  totalVotes: number;
+  totalCrowns: number;
+  competitionAddress?: string;
+  isClaimable?: boolean;
+  isClaiming?: boolean;
+  crownsCost?: number;
+}
+
+
+export interface ProfileProps {
+  user: {
+    username: string;
+    avatar: string;
+    following: number;
+    description: string;
+    followers: number;
+    credits: number;
+    bets: number;
+    winPercentage: number;
+    activity: ActivityItem[];
+    categories?: string[];
+    walletAddress?:string;
+    biconomyAddress?: string;
+    playMode?: boolean;
+  };
+}
+
+export interface FollowUser {
+  username: string;
+  avatar: string;
+  uid: string | null; 
+  followed: boolean;
+  description: string;
+  following: number;
+  followers: number;
+  bets: number;
+  winPercentage: number;
+  activity: ActivityItem[];
+}
+
+export interface Vote {
+  id: string;
+  timestamp: Date;
+  yes: boolean;
+  no: boolean;
+  crowns: number;
+}
+
+export interface Competition {
+  id: string;
+  title: string;
+  image: string;
+  yesVotes: number;
+  noVotes: number;
+  status: string;
+  category: string;
+  tags: string[];
+  endDate: Date;
+  totalCrowns: number;
+}
+
+export interface ReferralEntry {
+  userId: string;
+  username: string;
+  avatar: string;
+  referralCount: number;
+  totalPnl: number;
+}
+
+export interface ReferralLeaderboardState {
+  entries: ReferralEntry[];
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error: string | null;
+}
+
+
+
+=== Directory: ../../branch/app-brkt-v2/src/ABI ===
+
+
+=== File: ../../branch/app-brkt-v2/src/ABI/BracketABI.json ===
+[{"inputs":[{"internalType":"address","name":"_competitionFactory","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"CompetitionCompleted","type":"error"},{"inputs":[],"name":"CompetitionHasExpired","type":"error"},{"inputs":[],"name":"CompetitionIsLive","type":"error"},{"inputs":[],"name":"CompetitionNotCompleted","type":"error"},{"inputs":[],"name":"CompetitionNotExpired","type":"error"},{"inputs":[],"name":"CompetitionNotLive","type":"error"},{"inputs":[],"name":"CompetitionStillInProgress","type":"error"},{"inputs":[],"name":"IncorrectRegistrationFeePaid","type":"error"},{"inputs":[],"name":"IncorrectRegistrationToken","type":"error"},{"inputs":[{"internalType":"uint256","name":"_expectedLength","type":"uint256"},{"internalType":"uint256","name":"_actualLength","type":"uint256"}],"name":"InvalidCompetitionPredictionLength","type":"error"},{"inputs":[{"internalType":"uint256","name":"expectedLength","type":"uint256"},{"internalType":"uint256","name":"actualLength","type":"uint256"}],"name":"InvalidCompetitionResultsLength","type":"error"},{"inputs":[],"name":"InvalidExpiration","type":"error"},{"inputs":[{"internalType":"uint256","name":"matchId","type":"uint256"}],"name":"InvalidMatchId","type":"error"},{"inputs":[{"internalType":"uint256","name":"numTeams","type":"uint256"}],"name":"InvalidNumberOfTeams","type":"error"},{"inputs":[],"name":"InvalidRegistrationFeeInfo","type":"error"},{"inputs":[],"name":"InvalidStartTime","type":"error"},{"inputs":[{"internalType":"uint256","name":"matchId","type":"uint256"}],"name":"MatchAlreadyCompleted","type":"error"},{"inputs":[{"internalType":"uint256","name":"matchId","type":"uint256"}],"name":"MatchNotCompleted","type":"error"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"NoPendingRewards","type":"error"},{"inputs":[],"name":"NoProtocolFeesCaptured","type":"error"},{"inputs":[],"name":"NoRegistrationFee","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"NotFactory","type":"error"},{"inputs":[{"internalType":"uint256","name":"x","type":"uint256"},{"internalType":"uint256","name":"y","type":"uint256"}],"name":"PRBMath_MulDiv18_Overflow","type":"error"},{"inputs":[{"internalType":"uint256","name":"x","type":"uint256"},{"internalType":"uint256","name":"y","type":"uint256"},{"internalType":"uint256","name":"denominator","type":"uint256"}],"name":"PRBMath_MulDiv_Overflow","type":"error"},{"inputs":[],"name":"RoundAlreadyAtEnd","type":"error"},{"inputs":[],"name":"SafeTransferEthFailed","type":"error"},{"inputs":[{"internalType":"uint256","name":"numTeams","type":"uint256"},{"internalType":"uint256","name":"numTeamNames","type":"uint256"}],"name":"TeamNamesMismatch","type":"error"},{"inputs":[{"internalType":"uint256","name":"numTeams","type":"uint256"}],"name":"TooManyTeams","type":"error"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"UserNotRegistered","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":true,"internalType":"address","name":"user","type":"address"}],"name":"BracketPredictionSaved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"_matchId","type":"uint256"},{"indexed":true,"internalType":"uint8","name":"_winningTeamId","type":"uint8"}],"name":"MatchCompleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"_owner","type":"address"},{"indexed":false,"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"ProtocolFeesClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"UserClaimedRewards","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"components":[{"internalType":"bool","name":"isNetworkToken","type":"bool"},{"internalType":"address","name":"paymentToken","type":"address"},{"internalType":"uint256","name":"fee","type":"uint256"}],"indexed":false,"internalType":"struct RegistrationFeeInfo","name":"feeInfo","type":"tuple"}],"name":"UserIncreasedBracketPrediction","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"components":[{"internalType":"bool","name":"isNetworkToken","type":"bool"},{"internalType":"address","name":"paymentToken","type":"address"},{"internalType":"uint256","name":"fee","type":"uint256"}],"indexed":false,"internalType":"struct RegistrationFeeInfo","name":"feeInfo","type":"tuple"}],"name":"UserPaidForBracketPrediction","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"UserRefundedForBracket","type":"event"},{"inputs":[],"name":"MAX_TEAMS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"advanceRound","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint8[]","name":"_matchResults","type":"uint8[]"}],"name":"advanceRound","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"bannerURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"calculatePendingRewards","outputs":[{"internalType":"uint256","name":"pendingRewards_","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"calculateProtocolFeeCaptured","outputs":[{"internalType":"uint256","name":"protocolFeeCaptured_","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"claimProtocolFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"claimRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"competitionFactory","outputs":[{"internalType":"contract ICompetitionFactory","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"competitionName","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_matchId","type":"uint256"},{"internalType":"uint8","name":"_winningTeamId","type":"uint8"}],"name":"completeMatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_registrant","type":"address"},{"internalType":"uint8[]","name":"_matchPredictions","type":"uint8[]"}],"name":"createBracketPrediction","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_registrant","type":"address"},{"internalType":"uint8[]","name":"_matchPredictions","type":"uint8[]"}],"name":"createBracketPredictionGasToken","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"expirationEpoch","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getBracketPredictionFeeInfo","outputs":[{"components":[{"internalType":"bool","name":"isNetworkToken","type":"bool"},{"internalType":"address","name":"paymentToken","type":"address"},{"internalType":"uint256","name":"fee","type":"uint256"}],"internalType":"struct RegistrationFeeInfo","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getCompetitionProgression","outputs":[{"components":[{"internalType":"uint8","name":"winningTeamId","type":"uint8"},{"internalType":"bool","name":"isCompleted","type":"bool"}],"internalType":"struct MatchOutcome[]","name":"bracketProgress_","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_matchId","type":"uint256"}],"name":"getMatchOutcome","outputs":[{"components":[{"internalType":"uint8","name":"winningTeamId","type":"uint8"},{"internalType":"bool","name":"isCompleted","type":"bool"}],"internalType":"struct MatchOutcome","name":"matchOutcome_","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTeamNames","outputs":[{"internalType":"string[]","name":"teamNames_","type":"string[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTotalScore","outputs":[{"internalType":"uint256","name":"totalScore_","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserBracketPrediction","outputs":[{"internalType":"uint8[]","name":"bracketPrediction_","type":"uint8[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserBracketScore","outputs":[{"internalType":"uint256","name":"score_","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserPaymentMultiplier","outputs":[{"internalType":"UD60x18","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getUserScorePercent","outputs":[{"internalType":"uint256","name":"scorePercent_","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"hasFinished","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"hasStarted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"hasUserRegistered","outputs":[{"internalType":"bool","name":"isRegistered_","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_registrant","type":"address"}],"name":"increasePredictionPaymentMultiplier","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_registrant","type":"address"}],"name":"increasePredictionPaymentMultiplierGasToken","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"_competitionOwner","type":"address"},{"internalType":"string","name":"_competitionName","type":"string"},{"internalType":"uint16","name":"_numTeams","type":"uint16"},{"internalType":"uint64","name":"_startingEpoch","type":"uint64"},{"internalType":"uint64","name":"_expirationEpoch","type":"uint64"},{"internalType":"string[]","name":"_teamNames","type":"string[]"},{"internalType":"string","name":"_bannerURI","type":"string"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_competitionOwner","type":"address"},{"internalType":"string","name":"_competitionName","type":"string"},{"internalType":"uint16","name":"_numTeams","type":"uint16"},{"internalType":"uint64","name":"_startingEpoch","type":"uint64"},{"internalType":"uint64","name":"_expirationEpoch","type":"uint64"},{"internalType":"string[]","name":"_teamNames","type":"string[]"},{"internalType":"string","name":"_bannerURI","type":"string"},{"internalType":"uint16","name":"_totalPointsPerRound","type":"uint16"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_competitionOwner","type":"address"},{"internalType":"string","name":"_competitionName","type":"string"},{"internalType":"uint16","name":"_numTeams","type":"uint16"},{"internalType":"uint64","name":"_startingEpoch","type":"uint64"},{"internalType":"uint64","name":"_expirationEpoch","type":"uint64"},{"internalType":"string[]","name":"_teamNames","type":"string[]"},{"internalType":"string","name":"_bannerURI","type":"string"},{"internalType":"uint16","name":"_totalPointsPerRound","type":"uint16"},{"components":[{"internalType":"bool","name":"isNetworkToken","type":"bool"},{"internalType":"address","name":"paymentToken","type":"address"},{"internalType":"uint256","name":"fee","type":"uint256"}],"internalType":"struct RegistrationFeeInfo","name":"_registrationFeeInfo","type":"tuple"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"numTeams","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"refundRegistrationFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"roundsRemaining","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string[]","name":"_names","type":"string[]"}],"name":"setTeamNames","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"start","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"startingEpoch","outputs":[{"internalType":"uint64","name":"","type":"uint64"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"teamNames","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalPointsAvailable","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalPointsPerRound","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalRegistrationReserves","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalRounds","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}]
+
+
+=== File: ../../branch/app-brkt-v2/src/ABI/FactoryABI.json ===
+
+
+=== File: ../../branch/app-brkt-v2/.eslintrc.json ===
+{
+  "extends": "next/core-web-vitals"
+}
+
+
+
+=== File: ../../branch/app-brkt-v2/.firebaserc ===
+{
+  "projects": {
+    "default": "brkt-app"
+  }
+}
+
+
+
+=== File: ../../branch/app-brkt-v2/README.md ===
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
 ## Getting Started
 
-Create a project using this example:
+First, run the development server:
 
 ```bash
-npx thirdweb create --template next-typescript-starter
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-On `pages/_app.tsx`, you'll find our `ThirdwebProvider` wrapping your app, this is necessary for our [hooks](https://portal.thirdweb.com/react) and
-[UI Components](https://portal.thirdweb.com/ui-components) to work.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### Deploy to IPFS
-
-Deploy a copy of your application to IPFS using the following command:
-
-```bash
-yarn deploy
-```
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
 ## Learn More
 
-To learn more about thirdweb and Next.js, take a look at the following resources:
+To learn more about Next.js, take a look at the following resources:
 
-- [thirdweb React Documentation](https://docs.thirdweb.com/react) - learn about our React SDK.
-- [thirdweb TypeScript Documentation](https://docs.thirdweb.com/typescript) - learn about our JavaScript/TypeScript SDK.
-- [thirdweb Portal](https://docs.thirdweb.com) - check our guides and development resources.
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the thirdweb GitHub organization](https://github.com/thirdweb-dev) - your feedback and contributions are welcome!
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Join our Discord!
+## Deploy on Vercel
 
-For any questions, suggestions, join our discord at [https://discord.gg/thirdweb](https://discord.gg/thirdweb).
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-
-
-=== File: ../token-gating-discord-bot-api/client/next.config.js ===
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  basePath: '/token-gating-discord-bot-api',
-  assetPrefix: '/token-gating-discord-bot-api/',
-  images: {
-    unoptimized: true,
-  },
-}
-
-module.exports = nextConfig
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 
-=== File: ../token-gating-discord-bot-api/client/tsconfig.json ===
+
+=== File: ../../branch/app-brkt-v2/components.json ===
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
-}
-
-
-=== Directory: ../token-gating-discord-bot-api/client/components ===
-
-
-=== File: ../token-gating-discord-bot-api/client/components/SignIn.tsx ===
-import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
-import { useSession, signIn, signOut } from "next-auth/react";
-import React from "react";
-import styles from "../styles/Home.module.css";
-
-export default function SignIn() {
-  const address = useAddress();
-  const { data: session } = useSession();
-
-  // 1. The user is signed into discord and connected to wallet.
-  if (session && address) {
-    return (
-      <div className={styles.bigSpacerTop}>
-        <a onClick={() => signOut()} className={styles.secondaryButton}>
-          Sign out of Discord
-        </a>
-      </div>
-    );
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
   }
-
-  // 2. Connect Wallet
-  if (!address) {
-    return (
-      <div className={styles.main}>
-        <h2 className={styles.noGapBottom}>Connect Your Wallet</h2>
-        <p>Connect your wallet to check eligibility.</p>
-        <ConnectWallet accentColor="#F213A4" colorMode="dark" />
-      </div>
-    );
-  }
-
-  // 3. Connect with Discord (OAuth)
-  if (!session) {
-    return (
-      <div className={`${styles.main}`}>
-        <h2 className={styles.noGapBottom}>Sign In with Discord</h2>
-        <p>Sign In with Discord to check your eligibility for the NFT!</p>
-        <button
-          onClick={() => signIn("discord")}
-          className={`${styles.mainButton} ${styles.spacerTop}`}
-        >
-          Connect Discord
-        </button>
-      </div>
-    );
-  }
-
-  return null;
 }
 
 
 
-=== Directory: ../token-gating-discord-bot-api/client/pages ===
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/_app.tsx ===
-import type { AppProps } from "next/app";
-import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
-import { SessionProvider } from "next-auth/react";
-import "../styles/globals.css";
-
-// This is the chainId your dApp will work on.
-const activeChainId = ChainId.Mumbai;
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <ThirdwebProvider desiredChainId={activeChainId}>
-      <SessionProvider session={pageProps.session}>
-        <Component {...pageProps} />
-      </SessionProvider>
-    </ThirdwebProvider>
-  );
-}
-
-export default MyApp;
-
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/index.tsx ===
-import { useAddress, useSDK } from "@thirdweb-dev/react";
-import type { NextPage } from "next";
-import { useSession } from "next-auth/react";
-import SignIn from "../components/SignIn";
-import styles from "../styles/Home.module.css";
-
-const Home: NextPage = () => {
-  const address = useAddress(); // Get the user's address
-  const { data: session } = useSession(); // Get the user's session which contains the user's address
-  const sdk = useSDK(); // Get the Thirdweb SDK
-
-  async function requestGrantRole() {
-    // First, login and sign a message
-    const loginPayload = await sdk?.auth.login("http://localhost:3000"); // This will open a modal to login and sign a message
-    // Then make a request to our API endpoint.
-    try {
-      const response = await fetch("api/grant-role", {
-        method: "POST",
-        body: JSON.stringify({
-          loginPayload // This is the payload you got from the login step,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('data');
-      console.log(data);
-      // have the alert read the console and format the message
-      (function() {
-        var exLog = console.log;
-        console.log = function(msg) {
-            // @ts-ignore
-            exLog.apply(this, arguments);
-            msg = JSON.stringify(msg, null, 4);
-            // remove the first and last characters
-            msg = msg.substring(18, msg.length - 3);
-            alert(msg);
-        }
-    })();
-    console.log(data);
-      //alert("Check the console for the response!"); 
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  return (
-    <div>
-      <div className={styles.container} style={{ marginTop: 0 }}>
-        <SignIn />
-        {address && session && (
-          <div className={styles.collectionContainer}>
-            <button className={styles.mainButton} onClick={requestGrantRole}>
-              Give me the role!
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default Home;
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/pages/api ===
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/grant-role.tsx ===
-import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import type { NextApiRequest, NextApiResponse } from "next";
-import { unstable_getServerSession } from "next-auth/next";
-import { authOptions } from "./auth/[...nextauth]";
-import { ethers } from "ethers";
-//import discord from "discord.js";
-require("dotenv").config();
-import {createUser, getUser, emptyUser} from "./users";
-import { getAllTokens} from "./tokens";
-import { updateRoleForToken} from "./update-roles";
-import { assignMessage } from "./message";
-
-const abi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"indexed":false,"internalType":"uint256[]","name":"values","type":"uint256[]"}],"name":"TransferBatch","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"TransferSingle","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"value","type":"string"},{"indexed":true,"internalType":"uint256","name":"id","type":"uint256"}],"name":"URI","type":"event"},{"inputs":[],"name":"GRYFFINDOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"HUFFLEPUFF","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RAVENCLAW","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SLYTHERIN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"accounts","type":"address[]"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"burnBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"uint256[]","name":"_burnIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_burnAmounts","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintAmounts","type":"uint256[]"}],"name":"burnForMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"mintBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeBatchTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"string","name":"_uri","type":"string"}],"name":"setURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"uri","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
-
-export default async function grantRole(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    // Get the login payload out of the request
-    const { loginPayload } = JSON.parse(req.body);
-    // Get the Next Auth session so we can use the user ID as part of the discord API request
-    const session = await unstable_getServerSession(req, res, authOptions);
-    if (!session) {
-        res.status(401).json({ error: "Not logged in" });
-        return;
-    }
-    const sdk = new ThirdwebSDK("mumbai");
-    const provider = new ethers.providers.JsonRpcProvider(
-        "https://matic-mumbai.chainstacklabs.com"
-    );
-    const hogwartsContract = new ethers.Contract(
-        process.env.CONTRACT_ADDRESS as string,
-        abi,
-        provider
-    ); 
-    const verifiedWalletAddress = sdk.auth.verify(
-        "http://localhost:3000",
-        loginPayload
-    ); // Verify the login payload is real and valid
-    if (!verifiedWalletAddress) {// If the login payload is not valid, return an error
-        res.status(401).json({ error: "Invalid login payload" });
-        return;
-    }
-    // @ts-ignore
-    const { userId } = session; 
-    // temp data for testing:
-    // const user_id = process.env.DISCORD_USER_ID as string;
-    console.log("User ID: " + userId);
-
-    let user = await getUser(userId);
-     if (!user) {
-        console.log("user does not exist in db adding new user");
-        user = await createUser(userId, verifiedWalletAddress);
-     // if user exists in database: then update the user
-     } else { 
-        console.log("User Exists Updating User in Db");
-        // await updateUser(user_id, verifiedWalletAddress);
-        // remove the user data from the database each time for testing
-        await emptyUser(userId);
-    }
-    // get all the tokens from the database and put their ids in an array
-    const tokensInContract = await getAllTokens();
-    for (let i = 0; i < tokensInContract.length; i++) {
-        const balanceOfATokenInWallet = await hogwartsContract.balanceOf(verifiedWalletAddress,tokensInContract[i]._id);
-        console.log('Your Wallet Address : ' + verifiedWalletAddress + 'Token ID: ' + tokensInContract[i]._id + ' Balance: ' + balanceOfATokenInWallet.toNumber());
-        // check if the user roles need to be updated
-        updateRoleForToken(userId, tokensInContract[i]._id, verifiedWalletAddress, balanceOfATokenInWallet.toNumber());
-        if(i===tokensInContract.length-1){
-            console.log('Finished updating all tokens');
-            res.status(200).json({ message: assignMessage('', '', true, true) });
-        }
-    }
-}
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/message.tsx ===
-const messages: string[] = [];
-export function assignMessage (role_name: string, role_type: string, writeType: boolean, readType: boolean) {
-
-    function roleRemoveMessage (role_name: string)  {
-        return `You have been Removed from the ${role_name} Level role for Token Type ${role_type}!
-        You no longer are in possession of enough tokens to hold this role! !!`;
-    };
-    function roleAssignMessage (role_name: string) {
-        return `You have been Granted the ${role_name} Level role! Level role for Token Type ${role_type}!`;
-    };
-    
-    if (writeType && !readType) {
-        messages.push(roleAssignMessage(role_name));
-    } else if (!readType && !writeType){
-        messages.push(roleRemoveMessage(role_name));
-    }
-
-    if (readType) {
-        return messages.join(" ");
-    }
-}
-
-
-
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/tokens.tsx ===
-
-export async function createToken(token_id: number, token_roles: [], type: string) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                _id: token_id,
-                token_roles: token_roles,
-                type: type
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-
-export async function getToken(token_id: number) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    return data;
-
-}
-export async function updateToken(token_id: number, token_roles: [], type: string) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                token_roles: token_roles,
-                type: type,
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-export async function deleteToken(token_id: number) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-export async function getAllTokens() {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/update-roles.tsx ===
-import {getUser, updateUser} from "./users";
-import { getToken} from "./tokens";
-import { assignMessage } from "./message";
-
-export async function grantDiscordRole(user_id: string, role_id: string) {
-    const response = await fetch(
-        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
-        {
-          headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
-          },
-          method: "PUT",
-        }
-    );
-    const data = await response.json();
-    return data;
-}
-export async function removeDiscordRole(user_id: string, role_id: string) {
-    const response = await fetch(
-        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
-        {
-          headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
-          },
-          method: "DELETE",
-        }
-    );
-    const data = await response.json();
-    return data;
-}
-export async function hasDiscordRole(user_id: string, role_id: string) {
-    const response = await fetch(
-        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
-        {
-          headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
-          },
-          method: "GET",
-        }
-    );
-    const data = await response.json();
-    return data;
-}
-
-export async function updateRoleForToken(user_id: string, token_id: number, walletAddress: string, walletBalance: number) {
-  // get the token roles
-  const token = await getToken(token_id);
-  const token_type = token.type;
-  const token_roles = token.token_roles; // returns an array of objects
-  // get the user roles
-  const user = await getUser(user_id);
-  const user_roles = user.user_roles;
-  // function to determine if user already has role
-  function userHasRole (user_roles_arr:[], role_id: string) {
-    // @ts-ignore
-    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
-    return role_arr
-  }
-  // update the user roles
-  function roleUpdate(token_id: number, role_id: string, i: number) {
-    // determine if user already has role
-    const hasRoleArr = userHasRole(user_roles, role_id);
-    const hasRole = hasRoleArr.length > 0;
-    // calculate the curr next and previous role amounts
-    const currAmt = token_roles[i].required_amount;
-    const nxtAmt = token_roles[i++].required_amount;
-    const prvAmt = token_roles[i--].required_amount;
-    const thisRoleName = token_roles[i].role_name;
-    // determine if the user curr role matches the token role price
-    const atTop = walletBalance >= currAmt && token_roles.length - 2 === i;
-    const keepRole =
-      (walletBalance >= currAmt && walletBalance < nxtAmt) ||
-      (walletBalance >= currAmt && token_roles.length - 2 === i);
-    const moveDown =
-      walletBalance < currAmt && walletBalance >= prvAmt && i != 0;
-    const moveUp = walletBalance >= nxtAmt && token_roles.length - 2 != i;
-    const atBottom = i === 0;
-    const zeroBalance = walletBalance === 0;
-    // add post role to the user and discord
-    function addRole(message: string) {
-      const newToken = {
-        _id: token_id,
-        token_roles: [
-          {
-            _id: role_id,
-            token_id: token_id,
-            role_name: thisRoleName,
-            required_amount: currAmt,
-          },
-        ],
-        type: token_type,
-      };
-      const newRole = {
-        _id: role_id,
-        token_id: token_id,
-        role_name: thisRoleName,
-        required_amount: currAmt,
-      };
-      // if user has the role, createUser will update the user
-      user.public_address = walletAddress;
-      // add new token to the user
-      const tokensArr = user.tokens;
-      tokensArr.push(newToken);
-      // add new role to the user
-      const rolesArr = user.user_roles;
-      rolesArr.push(newRole);
-      // update the user
-      updateUser(user_id, user.public_address, tokensArr, rolesArr);
-      //grant the role discord role to the user
-      grantDiscordRole(user_id, role_id);
-      // message the user about the updates
-      assignMessage(token_roles[i].role_name, token_type, true, false);
-      console.log(message);
-    }
-    // remove the role from the user and discord
-    function removeRole(message: string, token_id?: number) {
-      user.public_address = walletAddress;
-      // remove the role from the user
-      const rolesArr = user.user_roles;
-      rolesArr.splice(rolesArr.indexOf(role_id), 1);
-      // remove the token from the user if balance is zero
-      const tokensArr = user.tokens;
-      // if token_id is passed in, remove the token from the user
-      if (token_id) {
-        console.log(
-          "Removing Token Data from User Because Balance is Zero " + token_id
-        );
-        tokensArr.splice(tokensArr.indexOf(token_id), 1);
-      }
-      updateUser(user_id, user.public_address, tokensArr, rolesArr);
-      // remove the discord role from the user
-      removeDiscordRole(user_id, role_id);
-      // message the user about the updates
-      console.log(message);
-      assignMessage(token_roles[i].role_name, token_type, false, false);
-    }
-    function keptRole(message: string) {
-      //update user balances
-      updateUser(user_id, user.public_address, user.tokens, user.user_roles);
-      // assign result message
-      assignMessage(token_roles[i].role_name, token_type, false, false);
-      // message the user about the updates
-      console.log(message);
-    }
-
-    if (atTop) {
-      hasRole === true ?keptRole("Congrats "+user_id+" Kept Role"+role_id+" Reached the Maxiumum Role Level for Token Thank You!!"):addRole("Congrats "+user_id+" You've qualified for a new role : "+role_id+" Upgrading Your Role Status....");
-    } else if (keepRole) {
-      hasRole === true ?keptRole("Dear "+user_id+" Kept Role "+role_id+"Buy more tokens to Increase Role Level!!!!"):addRole("Congrats "+user_id+" You've qualified for a new role :"+role_id+" Upgrading Your Role Status....");
-    } else if (moveUp) {
-      hasRole?removeRole("Congrats "+user_id+" Previous Role :"+role_id+" Was Removed. Upgrading Your Role Status...."):console.log("Congrats "+user_id+" You're over qualified for this role : "+role_id+" Upgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i++);
-    } else if (moveDown) {
-      hasRole?removeRole("Dear "+user_id+" Previous Role :"+role_id+"Was Removed. Downgrading Your Role Status...."+role_id):console.log("Dear "+user_id+"You're no longer qualified for this role :"+role_id+" Downgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i--);
-    } else if (atBottom) {
-      hasRole?removeRole("Unfortunately "+ +user_id+" Previous Role :"+role_id+" Was Removed You're no longer qualified for this role : "+role_id+" or any other role for this token please purchase more tokens to get a role for this token"):console.log("Unfortunately "+user_id+"You're not qualified for this role"+role_id+"or any other role for this token please purchase more tokens to get a role for this token");
-    } else if (zeroBalance) {
-      hasRole?removeRole("Dear "+user_id+" Zero Balance: No longer own tokens removing token from db",token_id):console.log("Dear "+user_id+" Zero Balance: You dont own any tokens for this token");
-    } else {
-      console.log("Something went wrong");
-    }
-  }
-  roleUpdate(token_id, token_roles[0]._id, 0);
-}
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/users.tsx ===
-
-export async function createUser(user_id: string, public_address?: string, tokens? : [], roles?: []) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                _id: user_id,
-                public_address: public_address,
-                tokens: tokens? tokens : [],
-                user_roles: roles? roles : []
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-export async function getUser(user_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    return data;
-}
-export async function updateUser(user_id: string, public_address?: string, tokens? : [], user_roles?: []) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                public_address: public_address? public_address : "",
-                tokens: tokens? tokens : [],
-                user_roles: user_roles? user_roles : []
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-
-export async function deleteUser(user_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-// get all users
-export async function getAllUsers() {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-// see if user has a particular role
-export async function userHasRole(user_id: string, role_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    const user_roles_arr = data.user_roles;
-    // @ts-ignore
-    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
-    return role_arr
-}
-// see if user has a particular token
-export async function userHasToken(user_id: string, token_id: number) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    const user_tokens_arr = data.tokens;
-    // @ts-ignore
-    const token_arr = user_tokens_arr.filter((item) => { return item._id === token_id});
-    return token_arr
-}
-// empty user tokens
-export async function emptyUser(user_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                tokens: [],
-                user_roles: []
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/pages/api/auth ===
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/auth/[...nextauth].tsx ===
-import NextAuth, { NextAuthOptions } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-require("dotenv").config();
-
-export const authOptions: NextAuthOptions = {
-  // Configure one or more authentication providers
-  providers: [
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
-    }),
-  ],
-
-  // When the user signs in, get their token
-  callbacks: {
-    async jwt({ token, account }) {
-      // Persist the user ID to the token right after signin
-      if (account) {
-        console.log(account);
-        token.userId = account.providerAccountId;
-      }
-      return token;
-    },
-    
-    async session({ session, token }) {
-      // @ts-ignore
-      session.userId = token.userId;
-      return session;
-    },
+=== File: ../../branch/app-brkt-v2/firebase.json ===
+{
+  "firestore": {
+    "indexes": "firestore.indexes.json"
   },
-};
-
-export default NextAuth(authOptions);
-
-
-=== Directory: ../token-gating-discord-bot-api/client/public ===
-
-
-=== File: ../token-gating-discord-bot-api/client/public/thirdweb.svg ===
-<svg width="1126" height="700" viewBox="0 0 1126 700" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M3.06915 58.8968C-8.14591 30.5859 12.7549 0 43.3414 0H233.233C251.075 0 266.878 10.6166 273.505 27.047L424.654 404.189C428.732 414.3 428.732 425.675 424.654 436.039L329.58 672.89C315.052 709.037 263.564 709.037 249.036 672.89L3.06915 58.8968ZM369.861 57.6329C359.665 29.5748 380.566 0 410.643 0H576.065C594.416 0 610.729 11.3749 616.846 28.3109L754.231 405.453C757.544 414.805 757.544 425.169 754.231 434.775L671.647 661.515C657.883 699.431 603.847 699.431 590.083 661.515L369.861 57.6329ZM741.233 0C710.646 0 689.746 30.5859 700.961 58.8968L946.927 672.89C961.456 709.037 1012.94 709.037 1027.47 672.89L1122.54 436.039C1126.62 425.675 1126.62 414.3 1122.54 404.189L971.396 27.047C964.769 10.6166 948.966 0 931.124 0H741.233Z" fill="url(#paint0_linear_215_66)"/>
-<defs>
-<linearGradient id="paint0_linear_215_66" x1="563.567" y1="-165.278" x2="1341.59" y2="881.403" gradientUnits="userSpaceOnUse">
-<stop stop-color="#F213A4"/>
-<stop offset="1" stop-color="#5204BF"/>
-</linearGradient>
-</defs>
-</svg>
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/styles ===
-
-
-=== File: ../token-gating-discord-bot-api/client/styles/Home.module.css ===
-.container {
-  margin-top: 96px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  padding: 0 24px;
-}
-
-.pageContainer {
-  max-width: 600px;
-  width: 90vw;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-direction: row;
-  gap: 2%;
-  padding: 1rem;
-}
-
-.secondaryButton {
-  cursor: pointer;
-  text-align: center;
-  padding: 5px;
-  color: #fff;
-  font-weight: 600;
-}
-
-.mainButton {
-  cursor: pointer;
-  display: inline-flex;
-  appearance: none;
-  align-items: center;
-  -webkit-box-align: center;
-  justify-content: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  line-height: 1.2;
-  font-weight: 600;
-  transition-property: background-color, border-color, color, fill, stroke,
-    opacity, box-shadow, transform;
-  transition-duration: 200ms;
-  height: 3rem;
-  min-width: 3rem;
-  font-size: 1rem;
-  background: #e5e5ea;
-  background-image: linear-gradient(to left, #cc25b3 0%, #418dff 101.52%);
-  color: #fff;
-  width: 180px;
-  text-align: center;
-  border-radius: 9999px;
-  border-style: none;
-}
-
-.mainButton:hover {
-  opacity: 0.8;
-}
-
-.main {
-  width: 500px;
-  max-width: 90vw;
-  min-height: 400px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 16px;
-  margin-top: 48px;
-}
-
-.collectionContainer {
-  width: 1200px;
-  max-width: 90vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2%;
-}
-
-.divider {
-  width: 50%;
-  border-color: grey;
-  opacity: 0.25;
-}
-
-.nftBoxGrid {
-  width: 1200px;
-  max-width: 95vw;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 1%;
-  margin-top: 28px;
-  flex-wrap: wrap;
-}
-
-.nftBox {
-  border-radius: 16px;
-  border: 1px solid #ccc;
-  width: 19%;
-  min-height: 200px;
-}
-
-/* Between 1200 and 800 */
-@media only screen and (min-width: 800px) and (max-width: 1200px) {
-  .nftBox {
-    width: 49%;
-    margin-top: 16px;
-  }
-}
-
-/* beneath 800
-*/
-@media only screen and (max-width: 800px) {
-  .nftBoxGrid {
-    justify-content: center;
-  }
-  .nftBox {
-    width: 90%;
-    margin-top: 16px;
-  }
-}
-
-/* Screen less than 630, then hide .center */
-@media only screen and (max-width: 630px) {
-  .center {
-    display: none;
-  }
-}
-
-.spacerTop {
-  margin-top: 16px;
-}
-
-.bigSpacerTop {
-  margin-top: 32px;
-}
-
-.spacerBottom {
-  margin-bottom: 16px;
-}
-
-.detailPageContainer {
-  max-width: 800px;
-}
-
-.detailPageHr {
-  margin-top: 0px;
-  margin-bottom: 32px;
-}
-
-.lightPurple {
-  color: #e011a7;
-}
-
-.nftMedia {
-  width: 100%;
-  max-height: 300px;
-  border-radius: 15px;
-}
-
-.noGapBottom {
-  margin-bottom: 0px;
-}
-
-
-
-=== File: ../token-gating-discord-bot-api/client/styles/globals.css ===
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-/* Box sizing rules */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Set core body defaults */
-body {
-  min-height: 100vh;
-  text-rendering: optimizeSpeed;
-  line-height: 1.5;
-  padding-bottom: 275px;
-}
-
-/* Inherit fonts */
-input,
-button,
-textarea,
-select {
-  font: inherit;
-}
-
-:root {
-  --background-color: #1c1e21;
-  --white: #ffffff;
-  --tw-color1: #a855f7;
-  --tw-color1-hover: #9333ea;
-}
-
-body {
-  background: var(--background-color);
-  font-family: "Inter", sans-serif;
-  color: var(--white);
-  display: flex;
-  margin: 0;
-  text-align: center;
-}
-
-h2 {
-  font-size: 2rem;
-  font-weight: 600;
-
-}
-
-
-
-=== File: ../token-gating-discord-bot-api/client/.babelrc ===
-{
-    "presets": ["next/babel"],
-    "plugins": []
-  }
-
-
-=== File: ../token-gating-discord-bot-api/client/.eslintrc.json ===
-{
-  "extends": [
-    "next"
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
   ]
 }
 
 
-
-=== File: ../token-gating-discord-bot-api/client/README.md ===
-## Getting Started
-
-Create a project using this example:
-
-```bash
-npx thirdweb create --template next-typescript-starter
-```
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-On `pages/_app.tsx`, you'll find our `ThirdwebProvider` wrapping your app, this is necessary for our [hooks](https://portal.thirdweb.com/react) and
-[UI Components](https://portal.thirdweb.com/ui-components) to work.
-
-### Deploy to IPFS
-
-Deploy a copy of your application to IPFS using the following command:
-
-```bash
-yarn deploy
-```
-
-## Learn More
-
-To learn more about thirdweb and Next.js, take a look at the following resources:
-
-- [thirdweb React Documentation](https://docs.thirdweb.com/react) - learn about our React SDK.
-- [thirdweb TypeScript Documentation](https://docs.thirdweb.com/typescript) - learn about our JavaScript/TypeScript SDK.
-- [thirdweb Portal](https://docs.thirdweb.com) - check our guides and development resources.
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-
-You can check out [the thirdweb GitHub organization](https://github.com/thirdweb-dev) - your feedback and contributions are welcome!
-
-## Join our Discord!
-
-For any questions, suggestions, join our discord at [https://discord.gg/thirdweb](https://discord.gg/thirdweb).
-
-
-
-=== File: ../token-gating-discord-bot-api/client/next.config.js ===
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  basePath: '/token-gating-discord-bot-api',
-  assetPrefix: '/token-gating-discord-bot-api/',
-  images: {
-    unoptimized: true,
-  },
-}
-
-module.exports = nextConfig
-
-
-=== File: ../token-gating-discord-bot-api/client/tsconfig.json ===
-{
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
-}
-
-
-=== Directory: ../token-gating-discord-bot-api/client/components ===
-
-
-=== File: ../token-gating-discord-bot-api/client/components/SignIn.tsx ===
-import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
-import { useSession, signIn, signOut } from "next-auth/react";
-import React from "react";
-import styles from "../styles/Home.module.css";
-
-export default function SignIn() {
-  const address = useAddress();
-  const { data: session } = useSession();
-
-  // 1. The user is signed into discord and connected to wallet.
-  if (session && address) {
-    return (
-      <div className={styles.bigSpacerTop}>
-        <a onClick={() => signOut()} className={styles.secondaryButton}>
-          Sign out of Discord
-        </a>
-      </div>
-    );
-  }
-
-  // 2. Connect Wallet
-  if (!address) {
-    return (
-      <div className={styles.main}>
-        <h2 className={styles.noGapBottom}>Connect Your Wallet</h2>
-        <p>Connect your wallet to check eligibility.</p>
-        <ConnectWallet accentColor="#F213A4" colorMode="dark" />
-      </div>
-    );
-  }
-
-  // 3. Connect with Discord (OAuth)
-  if (!session) {
-    return (
-      <div className={`${styles.main}`}>
-        <h2 className={styles.noGapBottom}>Sign In with Discord</h2>
-        <p>Sign In with Discord to check your eligibility for the NFT!</p>
-        <button
-          onClick={() => signIn("discord")}
-          className={`${styles.mainButton} ${styles.spacerTop}`}
-        >
-          Connect Discord
-        </button>
-      </div>
-    );
-  }
-
-  return null;
-}
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/pages ===
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/_app.tsx ===
-import type { AppProps } from "next/app";
-import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
-import { SessionProvider } from "next-auth/react";
-import "../styles/globals.css";
-
-// This is the chainId your dApp will work on.
-const activeChainId = ChainId.Mumbai;
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <ThirdwebProvider desiredChainId={activeChainId}>
-      <SessionProvider session={pageProps.session}>
-        <Component {...pageProps} />
-      </SessionProvider>
-    </ThirdwebProvider>
-  );
-}
-
-export default MyApp;
-
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/index.tsx ===
-import { useAddress, useSDK } from "@thirdweb-dev/react";
-import type { NextPage } from "next";
-import { useSession } from "next-auth/react";
-import SignIn from "../components/SignIn";
-import styles from "../styles/Home.module.css";
-
-const Home: NextPage = () => {
-  const address = useAddress(); // Get the user's address
-  const { data: session } = useSession(); // Get the user's session which contains the user's address
-  const sdk = useSDK(); // Get the Thirdweb SDK
-
-  async function requestGrantRole() {
-    // First, login and sign a message
-    const loginPayload = await sdk?.auth.login("http://localhost:3000"); // This will open a modal to login and sign a message
-    // Then make a request to our API endpoint.
-    try {
-      const response = await fetch("api/grant-role", {
-        method: "POST",
-        body: JSON.stringify({
-          loginPayload // This is the payload you got from the login step,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('data');
-      console.log(data);
-      // have the alert read the console and format the message
-      (function() {
-        var exLog = console.log;
-        console.log = function(msg) {
-            // @ts-ignore
-            exLog.apply(this, arguments);
-            msg = JSON.stringify(msg, null, 4);
-            // remove the first and last characters
-            msg = msg.substring(18, msg.length - 3);
-            alert(msg);
-        }
-    })();
-    console.log(data);
-      //alert("Check the console for the response!"); 
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  return (
-    <div>
-      <div className={styles.container} style={{ marginTop: 0 }}>
-        <SignIn />
-        {address && session && (
-          <div className={styles.collectionContainer}>
-            <button className={styles.mainButton} onClick={requestGrantRole}>
-              Give me the role!
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default Home;
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/pages/api ===
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/grant-role.tsx ===
-import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import type { NextApiRequest, NextApiResponse } from "next";
-import { unstable_getServerSession } from "next-auth/next";
-import { authOptions } from "./auth/[...nextauth]";
-import { ethers } from "ethers";
-//import discord from "discord.js";
-require("dotenv").config();
-import {createUser, getUser, emptyUser} from "./users";
-import { getAllTokens} from "./tokens";
-import { updateRoleForToken} from "./update-roles";
-import { assignMessage } from "./message";
-
-const abi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"indexed":false,"internalType":"uint256[]","name":"values","type":"uint256[]"}],"name":"TransferBatch","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"TransferSingle","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"value","type":"string"},{"indexed":true,"internalType":"uint256","name":"id","type":"uint256"}],"name":"URI","type":"event"},{"inputs":[],"name":"GRYFFINDOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"HUFFLEPUFF","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RAVENCLAW","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SLYTHERIN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"accounts","type":"address[]"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"}],"name":"balanceOfBatch","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"burnBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_from","type":"address"},{"internalType":"uint256[]","name":"_burnIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_burnAmounts","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintIds","type":"uint256[]"},{"internalType":"uint256[]","name":"_mintAmounts","type":"uint256[]"}],"name":"burnForMint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256[]","name":"_ids","type":"uint256[]"},{"internalType":"uint256[]","name":"_amounts","type":"uint256[]"}],"name":"mintBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256[]","name":"ids","type":"uint256[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeBatchTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"string","name":"_uri","type":"string"}],"name":"setURI","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"uri","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
-
-export default async function grantRole(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    // Get the login payload out of the request
-    const { loginPayload } = JSON.parse(req.body);
-    // Get the Next Auth session so we can use the user ID as part of the discord API request
-    const session = await unstable_getServerSession(req, res, authOptions);
-    if (!session) {
-        res.status(401).json({ error: "Not logged in" });
-        return;
-    }
-    const sdk = new ThirdwebSDK("mumbai");
-    const provider = new ethers.providers.JsonRpcProvider(
-        "https://matic-mumbai.chainstacklabs.com"
-    );
-    const hogwartsContract = new ethers.Contract(
-        process.env.CONTRACT_ADDRESS as string,
-        abi,
-        provider
-    ); 
-    const verifiedWalletAddress = sdk.auth.verify(
-        "http://localhost:3000",
-        loginPayload
-    ); // Verify the login payload is real and valid
-    if (!verifiedWalletAddress) {// If the login payload is not valid, return an error
-        res.status(401).json({ error: "Invalid login payload" });
-        return;
-    }
-    // @ts-ignore
-    const { userId } = session; 
-    // temp data for testing:
-    // const user_id = process.env.DISCORD_USER_ID as string;
-    console.log("User ID: " + userId);
-
-    let user = await getUser(userId);
-     if (!user) {
-        console.log("user does not exist in db adding new user");
-        user = await createUser(userId, verifiedWalletAddress);
-     // if user exists in database: then update the user
-     } else { 
-        console.log("User Exists Updating User in Db");
-        // await updateUser(user_id, verifiedWalletAddress);
-        // remove the user data from the database each time for testing
-        await emptyUser(userId);
-    }
-    // get all the tokens from the database and put their ids in an array
-    const tokensInContract = await getAllTokens();
-    for (let i = 0; i < tokensInContract.length; i++) {
-        const balanceOfATokenInWallet = await hogwartsContract.balanceOf(verifiedWalletAddress,tokensInContract[i]._id);
-        console.log('Your Wallet Address : ' + verifiedWalletAddress + 'Token ID: ' + tokensInContract[i]._id + ' Balance: ' + balanceOfATokenInWallet.toNumber());
-        // check if the user roles need to be updated
-        updateRoleForToken(userId, tokensInContract[i]._id, verifiedWalletAddress, balanceOfATokenInWallet.toNumber());
-        if(i===tokensInContract.length-1){
-            console.log('Finished updating all tokens');
-            res.status(200).json({ message: assignMessage('', '', true, true) });
-        }
-    }
-}
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/message.tsx ===
-const messages: string[] = [];
-export function assignMessage (role_name: string, role_type: string, writeType: boolean, readType: boolean) {
-
-    function roleRemoveMessage (role_name: string)  {
-        return `You have been Removed from the ${role_name} Level role for Token Type ${role_type}!
-        You no longer are in possession of enough tokens to hold this role! !!`;
-    };
-    function roleAssignMessage (role_name: string) {
-        return `You have been Granted the ${role_name} Level role! Level role for Token Type ${role_type}!`;
-    };
-    
-    if (writeType && !readType) {
-        messages.push(roleAssignMessage(role_name));
-    } else if (!readType && !writeType){
-        messages.push(roleRemoveMessage(role_name));
-    }
-
-    if (readType) {
-        return messages.join(" ");
-    }
-}
-
-
-
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/tokens.tsx ===
-
-export async function createToken(token_id: number, token_roles: [], type: string) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                _id: token_id,
-                token_roles: token_roles,
-                type: type
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-
-export async function getToken(token_id: number) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    return data;
-
-}
-export async function updateToken(token_id: number, token_roles: [], type: string) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                token_roles: token_roles,
-                type: type,
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-export async function deleteToken(token_id: number) {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}/${token_id}`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-export async function getAllTokens() {
-    const response = await fetch(`${process.env.TOKENS_ENDPOINT}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/update-roles.tsx ===
-import {getUser, updateUser} from "./users";
-import { getToken} from "./tokens";
-import { assignMessage } from "./message";
-
-export async function grantDiscordRole(user_id: string, role_id: string) {
-    const response = await fetch(
-        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
-        {
-          headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
-          },
-          method: "PUT",
-        }
-    );
-    const data = await response.json();
-    return data;
-}
-export async function removeDiscordRole(user_id: string, role_id: string) {
-    const response = await fetch(
-        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
-        {
-          headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
-          },
-          method: "DELETE",
-        }
-    );
-    const data = await response.json();
-    return data;
-}
-export async function hasDiscordRole(user_id: string, role_id: string) {
-    const response = await fetch(
-        `https://discordapp.com/api/guilds/${process.env.DISCORD_GUILD_ID}/members/${user_id}/roles/${role_id}`,
-        {
-          headers: {
-            Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,  // Use the bot token to authenticate the request
-          },
-          method: "GET",
-        }
-    );
-    const data = await response.json();
-    return data;
-}
-
-export async function updateRoleForToken(user_id: string, token_id: number, walletAddress: string, walletBalance: number) {
-  // get the token roles
-  const token = await getToken(token_id);
-  const token_type = token.type;
-  const token_roles = token.token_roles; // returns an array of objects
-  // get the user roles
-  const user = await getUser(user_id);
-  const user_roles = user.user_roles;
-  // function to determine if user already has role
-  function userHasRole (user_roles_arr:[], role_id: string) {
-    // @ts-ignore
-    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
-    return role_arr
-  }
-  // update the user roles
-  function roleUpdate(token_id: number, role_id: string, i: number) {
-    // determine if user already has role
-    const hasRoleArr = userHasRole(user_roles, role_id);
-    const hasRole = hasRoleArr.length > 0;
-    // calculate the curr next and previous role amounts
-    const currAmt = token_roles[i].required_amount;
-    const nxtAmt = token_roles[i++].required_amount;
-    const prvAmt = token_roles[i--].required_amount;
-    const thisRoleName = token_roles[i].role_name;
-    // determine if the user curr role matches the token role price
-    const atTop = walletBalance >= currAmt && token_roles.length - 2 === i;
-    const keepRole =
-      (walletBalance >= currAmt && walletBalance < nxtAmt) ||
-      (walletBalance >= currAmt && token_roles.length - 2 === i);
-    const moveDown =
-      walletBalance < currAmt && walletBalance >= prvAmt && i != 0;
-    const moveUp = walletBalance >= nxtAmt && token_roles.length - 2 != i;
-    const atBottom = i === 0;
-    const zeroBalance = walletBalance === 0;
-    // add post role to the user and discord
-    function addRole(message: string) {
-      const newToken = {
-        _id: token_id,
-        token_roles: [
-          {
-            _id: role_id,
-            token_id: token_id,
-            role_name: thisRoleName,
-            required_amount: currAmt,
-          },
-        ],
-        type: token_type,
-      };
-      const newRole = {
-        _id: role_id,
-        token_id: token_id,
-        role_name: thisRoleName,
-        required_amount: currAmt,
-      };
-      // if user has the role, createUser will update the user
-      user.public_address = walletAddress;
-      // add new token to the user
-      const tokensArr = user.tokens;
-      tokensArr.push(newToken);
-      // add new role to the user
-      const rolesArr = user.user_roles;
-      rolesArr.push(newRole);
-      // update the user
-      updateUser(user_id, user.public_address, tokensArr, rolesArr);
-      //grant the role discord role to the user
-      grantDiscordRole(user_id, role_id);
-      // message the user about the updates
-      assignMessage(token_roles[i].role_name, token_type, true, false);
-      console.log(message);
-    }
-    // remove the role from the user and discord
-    function removeRole(message: string, token_id?: number) {
-      user.public_address = walletAddress;
-      // remove the role from the user
-      const rolesArr = user.user_roles;
-      rolesArr.splice(rolesArr.indexOf(role_id), 1);
-      // remove the token from the user if balance is zero
-      const tokensArr = user.tokens;
-      // if token_id is passed in, remove the token from the user
-      if (token_id) {
-        console.log(
-          "Removing Token Data from User Because Balance is Zero " + token_id
-        );
-        tokensArr.splice(tokensArr.indexOf(token_id), 1);
-      }
-      updateUser(user_id, user.public_address, tokensArr, rolesArr);
-      // remove the discord role from the user
-      removeDiscordRole(user_id, role_id);
-      // message the user about the updates
-      console.log(message);
-      assignMessage(token_roles[i].role_name, token_type, false, false);
-    }
-    function keptRole(message: string) {
-      //update user balances
-      updateUser(user_id, user.public_address, user.tokens, user.user_roles);
-      // assign result message
-      assignMessage(token_roles[i].role_name, token_type, false, false);
-      // message the user about the updates
-      console.log(message);
-    }
-
-    if (atTop) {
-      hasRole === true ?keptRole("Congrats "+user_id+" Kept Role"+role_id+" Reached the Maxiumum Role Level for Token Thank You!!"):addRole("Congrats "+user_id+" You've qualified for a new role : "+role_id+" Upgrading Your Role Status....");
-    } else if (keepRole) {
-      hasRole === true ?keptRole("Dear "+user_id+" Kept Role "+role_id+"Buy more tokens to Increase Role Level!!!!"):addRole("Congrats "+user_id+" You've qualified for a new role :"+role_id+" Upgrading Your Role Status....");
-    } else if (moveUp) {
-      hasRole?removeRole("Congrats "+user_id+" Previous Role :"+role_id+" Was Removed. Upgrading Your Role Status...."):console.log("Congrats "+user_id+" You're over qualified for this role : "+role_id+" Upgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i++);
-    } else if (moveDown) {
-      hasRole?removeRole("Dear "+user_id+" Previous Role :"+role_id+"Was Removed. Downgrading Your Role Status...."+role_id):console.log("Dear "+user_id+"You're no longer qualified for this role :"+role_id+" Downgrading Your Role Status...."),roleUpdate(token_id,token_roles[i++]._id,i--);
-    } else if (atBottom) {
-      hasRole?removeRole("Unfortunately "+ +user_id+" Previous Role :"+role_id+" Was Removed You're no longer qualified for this role : "+role_id+" or any other role for this token please purchase more tokens to get a role for this token"):console.log("Unfortunately "+user_id+"You're not qualified for this role"+role_id+"or any other role for this token please purchase more tokens to get a role for this token");
-    } else if (zeroBalance) {
-      hasRole?removeRole("Dear "+user_id+" Zero Balance: No longer own tokens removing token from db",token_id):console.log("Dear "+user_id+" Zero Balance: You dont own any tokens for this token");
-    } else {
-      console.log("Something went wrong");
-    }
-  }
-  roleUpdate(token_id, token_roles[0]._id, 0);
-}
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/users.tsx ===
-
-export async function createUser(user_id: string, public_address?: string, tokens? : [], roles?: []) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                _id: user_id,
-                public_address: public_address,
-                tokens: tokens? tokens : [],
-                user_roles: roles? roles : []
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-export async function getUser(user_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    return data;
-}
-export async function updateUser(user_id: string, public_address?: string, tokens? : [], user_roles?: []) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                public_address: public_address? public_address : "",
-                tokens: tokens? tokens : [],
-                user_roles: user_roles? user_roles : []
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-
-export async function deleteUser(user_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
-        method: "DELETE",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-// get all users
-export async function getAllUsers() {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-    const data = await response.json();
-    return data;
-}
-// see if user has a particular role
-export async function userHasRole(user_id: string, role_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    const user_roles_arr = data.user_roles;
-    // @ts-ignore
-    const role_arr = user_roles_arr.filter((item) => { return item._id === role_id});
-    return role_arr
-}
-// see if user has a particular token
-export async function userHasToken(user_id: string, token_id: number) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    });
-    const data = await response.json();
-    const user_tokens_arr = data.tokens;
-    // @ts-ignore
-    const token_arr = user_tokens_arr.filter((item) => { return item._id === token_id});
-    return token_arr
-}
-// empty user tokens
-export async function emptyUser(user_id: string) {
-    const response = await fetch(`${process.env.USERS_ENDPOINT}/${user_id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-            {   
-                tokens: [],
-                user_roles: []
-            }
-        )
-    })
-    const data = await response.json();
-    return data;
-}
-
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/pages/api/auth ===
-
-
-=== File: ../token-gating-discord-bot-api/client/pages/api/auth/[...nextauth].tsx ===
-import NextAuth, { NextAuthOptions } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-require("dotenv").config();
-
-export const authOptions: NextAuthOptions = {
-  // Configure one or more authentication providers
-  providers: [
-    DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
-    }),
-  ],
-
-  // When the user signs in, get their token
-  callbacks: {
-    async jwt({ token, account }) {
-      // Persist the user ID to the token right after signin
-      if (account) {
-        console.log(account);
-        token.userId = account.providerAccountId;
-      }
-      return token;
-    },
-    
-    async session({ session, token }) {
-      // @ts-ignore
-      session.userId = token.userId;
-      return session;
-    },
-  },
-};
-
-export default NextAuth(authOptions);
-
-
-=== Directory: ../token-gating-discord-bot-api/client/public ===
-
-
-=== File: ../token-gating-discord-bot-api/client/public/thirdweb.svg ===
-<svg width="1126" height="700" viewBox="0 0 1126 700" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M3.06915 58.8968C-8.14591 30.5859 12.7549 0 43.3414 0H233.233C251.075 0 266.878 10.6166 273.505 27.047L424.654 404.189C428.732 414.3 428.732 425.675 424.654 436.039L329.58 672.89C315.052 709.037 263.564 709.037 249.036 672.89L3.06915 58.8968ZM369.861 57.6329C359.665 29.5748 380.566 0 410.643 0H576.065C594.416 0 610.729 11.3749 616.846 28.3109L754.231 405.453C757.544 414.805 757.544 425.169 754.231 434.775L671.647 661.515C657.883 699.431 603.847 699.431 590.083 661.515L369.861 57.6329ZM741.233 0C710.646 0 689.746 30.5859 700.961 58.8968L946.927 672.89C961.456 709.037 1012.94 709.037 1027.47 672.89L1122.54 436.039C1126.62 425.675 1126.62 414.3 1122.54 404.189L971.396 27.047C964.769 10.6166 948.966 0 931.124 0H741.233Z" fill="url(#paint0_linear_215_66)"/>
-<defs>
-<linearGradient id="paint0_linear_215_66" x1="563.567" y1="-165.278" x2="1341.59" y2="881.403" gradientUnits="userSpaceOnUse">
-<stop stop-color="#F213A4"/>
-<stop offset="1" stop-color="#5204BF"/>
-</linearGradient>
-</defs>
-</svg>
-
-
-
-=== Directory: ../token-gating-discord-bot-api/client/styles ===
-
-
-=== File: ../token-gating-discord-bot-api/client/styles/Home.module.css ===
-.container {
-  margin-top: 96px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  padding: 0 24px;
-}
-
-.pageContainer {
-  max-width: 600px;
-  width: 90vw;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-direction: row;
-  gap: 2%;
-  padding: 1rem;
-}
-
-.secondaryButton {
-  cursor: pointer;
-  text-align: center;
-  padding: 5px;
-  color: #fff;
-  font-weight: 600;
-}
-
-.mainButton {
-  cursor: pointer;
-  display: inline-flex;
-  appearance: none;
-  align-items: center;
-  -webkit-box-align: center;
-  justify-content: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  line-height: 1.2;
-  font-weight: 600;
-  transition-property: background-color, border-color, color, fill, stroke,
-    opacity, box-shadow, transform;
-  transition-duration: 200ms;
-  height: 3rem;
-  min-width: 3rem;
-  font-size: 1rem;
-  background: #e5e5ea;
-  background-image: linear-gradient(to left, #cc25b3 0%, #418dff 101.52%);
-  color: #fff;
-  width: 180px;
-  text-align: center;
-  border-radius: 9999px;
-  border-style: none;
-}
-
-.mainButton:hover {
-  opacity: 0.8;
-}
-
-.main {
-  width: 500px;
-  max-width: 90vw;
-  min-height: 400px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 16px;
-  margin-top: 48px;
-}
-
-.collectionContainer {
-  width: 1200px;
-  max-width: 90vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2%;
-}
-
-.divider {
-  width: 50%;
-  border-color: grey;
-  opacity: 0.25;
-}
-
-.nftBoxGrid {
-  width: 1200px;
-  max-width: 95vw;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 1%;
-  margin-top: 28px;
-  flex-wrap: wrap;
-}
-
-.nftBox {
-  border-radius: 16px;
-  border: 1px solid #ccc;
-  width: 19%;
-  min-height: 200px;
-}
-
-/* Between 1200 and 800 */
-@media only screen and (min-width: 800px) and (max-width: 1200px) {
-  .nftBox {
-    width: 49%;
-    margin-top: 16px;
-  }
-}
-
-/* beneath 800
-*/
-@media only screen and (max-width: 800px) {
-  .nftBoxGrid {
-    justify-content: center;
-  }
-  .nftBox {
-    width: 90%;
-    margin-top: 16px;
-  }
-}
-
-/* Screen less than 630, then hide .center */
-@media only screen and (max-width: 630px) {
-  .center {
-    display: none;
-  }
-}
-
-.spacerTop {
-  margin-top: 16px;
-}
-
-.bigSpacerTop {
-  margin-top: 32px;
-}
-
-.spacerBottom {
-  margin-bottom: 16px;
-}
-
-.detailPageContainer {
-  max-width: 800px;
-}
-
-.detailPageHr {
-  margin-top: 0px;
-  margin-bottom: 32px;
-}
-
-.lightPurple {
-  color: #e011a7;
-}
-
-.nftMedia {
-  width: 100%;
-  max-height: 300px;
-  border-radius: 15px;
-}
-
-.noGapBottom {
-  margin-bottom: 0px;
-}
-
-
-
-=== File: ../token-gating-discord-bot-api/client/styles/globals.css ===
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-/* Box sizing rules */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Set core body defaults */
-body {
-  min-height: 100vh;
-  text-rendering: optimizeSpeed;
-  line-height: 1.5;
-  padding-bottom: 275px;
-}
-
-/* Inherit fonts */
-input,
-button,
-textarea,
-select {
-  font: inherit;
-}
-
-:root {
-  --background-color: #1c1e21;
-  --white: #ffffff;
-  --tw-color1: #a855f7;
-  --tw-color1-hover: #9333ea;
-}
-
-body {
-  background: var(--background-color);
-  font-family: "Inter", sans-serif;
-  color: var(--white);
-  display: flex;
-  margin: 0;
-  text-align: center;
-}
-
-h2 {
-  font-size: 2rem;
-  font-weight: 600;
-
-}
-
+=== File: ../../branch/app-brkt-v2/firebase.ts ===
