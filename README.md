@@ -1,6 +1,6 @@
 # Codebase Snapshot AI Lens
 
-A Node.js utility for generating comprehensive project documentation snapshots optimized for AI assistance. This tool analyzes repository content, creates file listings, and generates detailed project snapshots while respecting common gitignore patterns.
+A Node.js utility for generating comprehensive project documentation snapshots optimized for AI assistance. This tool analyzes repository content, creates file listings, and generates detailed project snapshots while respecting common gitignore patterns
 
 ## Description
 This project provides a powerful tool for developers to generate detailed documentation snapshots of their repositories, specifically designed to share codebase context with AI assistants. It recursively analyzes project structures, creates file listings, and generates comprehensive project snapshots while respecting common gitignore patterns and maintaining configurable limits. The generated snapshots are formatted to provide AI models with clear, structured insights into your codebase.
